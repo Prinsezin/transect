@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Transect - AI adoption decision tool for conservation NGOs</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+  :root{
+
+    --ink:#1C3A33;--ink-2:#2E5249;--paper:#E6E8E0;--surface:#F5F6F1;--surface-2:#FBFCF8;
+
+    --line:#C8CDBF;--text:#1C2B27;--muted:#5C6B63;
+
+    --pass:#5F8767;--pass-bg:#DCE6D9;--cond:#B5802F;--cond-bg:#F0E5CD;
+
+    --hold:#A8473A;--hold-bg:#ECD3CC;--log:#7E8B82;--log-bg:#E3E7DF;
+
+    --sans:"Fraunces",Georgia,"Times New Roman",serif;
+
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+
+  }
+
+  *{box-sizing:border-box}
+
+  html,body{margin:0;padding:0}
+
+  body{background:var(--paper);color:var(--text);font-family:var(--serif);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+ 
+
+  .topbar{display:flex;justify-content:flex-end;padding:14px 0 0}
+
+  .lang{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;background:var(--surface-2);
+
+    border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;color:var(--ink-2)}
+
+  .lang:hover{border-color:var(--ink-2)}
+
+  .lang:focus-visible{outline:2px solid var(--cond);outline-offset:2px}
+
+ 
+
+  header.masthead{border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--surface-2),var(--paper))}
+
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
+
+  .masthead .eyebrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:18px 0 14px}
+
+  .dot-live{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;box-shadow:0 0 0 3px var(--pass-bg)}
+
+  h1{font-family:var(--sans);font-weight:700;letter-spacing:-.02em;line-height:1.02;font-size:clamp(30px,5vw,46px);margin:0 0 12px;color:var(--ink)}
+
+  .lede{font-size:18px;color:var(--ink-2);max-width:64ch;margin:0 0 26px}
+
+  .lede b{color:var(--ink);font-weight:700}
+
+ 
+
+  main{padding:32px 0 80px}
+
+  .grid{display:grid;grid-template-columns:248px 1fr;gap:40px;align-items:start}
+
+ 
+
+  .transect{position:sticky;top:24px}
+
+  .transect h2{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 18px}
+
+  .station{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;padding-bottom:22px;position:relative}
+
+  .station .rail{position:relative;display:flex;justify-content:center}
+
+  .station .node{width:26px;height:26px;border-radius:50%;background:var(--surface);border:2px solid var(--line);z-index:2;margin-top:2px;
+
+    display:flex;align-items:center;justify-content:center;transition:background .35s ease,border-color .35s ease,transform .2s ease;
+
+    font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+  .station:not(:last-child) .rail::after{content:"";position:absolute;top:24px;bottom:-24px;width:2px;background:var(--line);z-index:1;transition:background .35s ease}
+
+  .station .meta .name{font-family:var(--sans);font-weight:700;font-size:15px;color:var(--ink);line-height:1.15}
+
+  .station .meta .tr{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted)}
+
+  .station .meta .reading{display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-top:5px;padding:2px 7px;border-radius:3px}
+
+  .station[data-reading] .meta .reading{display:inline-block}
+
+  .station.current .node{transform:scale(1.12);border-color:var(--ink);color:var(--ink)}
+
+  .station.current .meta .name{color:var(--ink)}
+
+  .station[data-reading="pass"] .node{background:var(--pass);border-color:var(--pass);color:#fff}
+
+  .station[data-reading="pass"] .rail::after{background:var(--pass)}
+
+  .station[data-reading="pass"] .reading{background:var(--pass-bg);color:#33543b}
+
+  .station[data-reading="cond"] .node{background:var(--cond);border-color:var(--cond);color:#fff}
+
+  .station[data-reading="cond"] .rail::after{background:var(--cond)}
+
+  .station[data-reading="cond"] .reading{background:var(--cond-bg);color:#7a531a}
+
+  .station[data-reading="hold"] .node{background:var(--hold);border-color:var(--hold);color:#fff}
+
+  .station[data-reading="hold"] .rail::after{background:var(--hold)}
+
+  .station[data-reading="hold"] .reading{background:var(--hold-bg);color:#7d2f25}
+
+  .station[data-reading="log"] .node{background:var(--log);border-color:var(--log);color:#fff}
+
+  .station[data-reading="log"] .rail::after{background:var(--log)}
+
+  .station[data-reading="log"] .reading{background:var(--log-bg);color:#4d5a51}
+
+  .station.terminus .node{border-radius:5px;width:28px;height:28px}
+
+ 
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:30px 32px 26px;min-height:440px;display:flex;flex-direction:column}
+
+  .panel .step-tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cond);margin-bottom:10px}
+
+  .panel h3{font-family:var(--sans);font-weight:700;letter-spacing:-.01em;font-size:25px;margin:0 0 6px;color:var(--ink)}
+
+  .panel .sub{color:var(--muted);font-size:15px;margin:0 0 22px;max-width:62ch}
+
+ 
+
+  .q{margin-bottom:24px}
+
+  .q > label.qlabel{display:block;font-family:var(--sans);font-weight:600;font-size:15.5px;color:var(--text);margin-bottom:4px}
+
+  .q .hint{font-size:13.5px;color:var(--muted);margin:0 0 11px;max-width:60ch}
+
+ 
+
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+
+  .chip{font-family:var(--sans);font-size:14px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;cursor:pointer;user-select:none;transition:all .14s ease}
+
+  .chip:hover{border-color:var(--ink-2)}
+
+  .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+  .chip:focus-visible{outline:2px solid var(--cond);outline-offset:2px}
+
+ 
+
+  input[type=text],input[type=number]{width:100%;font-family:var(--serif);font-size:16px;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:11px 13px}
+
+  input[type=text]:focus,input[type=number]:focus{outline:2px solid var(--cond);outline-offset:1px;border-color:var(--ink-2)}
+
+ 
+
+  details.why,details.guide{margin-top:11px;border-top:1px dashed var(--line);padding-top:10px}
+
+  details summary{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;list-style:none}
+
+  details summary::-webkit-details-marker{display:none}
+
+  details summary::before{content:"+ ";color:var(--cond)}
+
+  details[open] summary::before{content:"– "}
+
+  details.why p{font-size:13.5px;color:var(--muted);margin:8px 0 0;max-width:62ch}
+
+  details.guide{border-top:1px solid var(--line);margin-top:14px}
+
+  details.guide summary{color:var(--ink-2);font-weight:600}
+
+  .guide .lead{font-size:13.5px;color:var(--muted);margin:10px 0 8px}
+
+  .guide ul{margin:0;padding:0;list-style:none}
+
+  .guide li{font-size:13.5px;color:var(--text);padding:8px 0 8px 22px;position:relative;border-bottom:1px dotted var(--line)}
+
+  .guide li:last-child{border-bottom:none}
+
+  .guide li::before{content:"›";position:absolute;left:4px;top:8px;color:var(--cond);font-family:var(--mono)}
+
+  .guide li b{color:var(--ink)}
+
+ 
+
+  /* data warning / guidance boxes */
+
+  .warnbox{margin-top:14px;border:1px solid var(--cond);background:var(--cond-bg);border-radius:8px;padding:14px 16px}
+
+  .warnbox.stop{border-color:var(--hold);background:var(--hold-bg)}
+
+  .warnbox h5{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px;color:#7a531a}
+
+  .warnbox.stop h5{color:#7d2f25}
+
+  .warnbox ul{margin:0;padding-left:18px}
+
+  .warnbox li{font-size:13.5px;color:var(--text);margin-bottom:6px}
+
+  .warnbox li:last-child{margin-bottom:0}
+
+  .warnbox p{font-size:13.5px;color:var(--text);margin:0 0 6px}
+
+ 
+
+  .nav{margin-top:auto;padding-top:24px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+
+  .btn{font-family:var(--sans);font-weight:700;font-size:15px;border-radius:8px;padding:11px 22px;cursor:pointer;border:1px solid var(--ink);transition:all .14s ease}
+
+  .btn.primary{background:var(--ink);color:#fff}
+
+  .btn.primary:hover{background:var(--ink-2)}
+
+  .btn.ghost{background:transparent;color:var(--ink)}
+
+  .btn.ghost:hover{background:var(--surface-2)}
+
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  .btn:focus-visible{outline:2px solid var(--cond);outline-offset:2px}
+
+  .nav .spacer{flex:1}
+
+  .err{color:var(--hold);font-family:var(--sans);font-size:13.5px;font-weight:600;min-height:18px}
+
+ 
+
+  .verdict-badge{display:inline-flex;align-items:center;gap:12px;border-radius:9px;padding:14px 20px;margin-bottom:8px;font-family:var(--mono)}
+
+  .verdict-badge .code{font-size:13px;letter-spacing:.14em;font-weight:700}
+
+  .verdict-badge .name{font-family:var(--sans);font-weight:700;font-size:21px;letter-spacing:-.01em}
+
+  .verdict-badge.adopt{background:var(--pass-bg);color:#33543b}
+
+  .verdict-badge.cond{background:var(--cond-bg);color:#7a531a}
+
+  .verdict-badge.hold{background:var(--hold-bg);color:#7d2f25}
+
+  .rationale{font-size:16px;color:var(--ink-2);max-width:62ch;margin:8px 0 22px}
+
+  .rationale b{color:var(--ink)}
+
+  .readout{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+
+  .pill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:5px 11px;border-radius:5px;display:inline-flex;gap:7px;align-items:center}
+
+  .pill.pass{background:var(--pass-bg);color:#33543b}
+
+  .pill.cond{background:var(--cond-bg);color:#7a531a}
+
+  .pill.hold{background:var(--hold-bg);color:#7d2f25}
+
+  .instr h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:400}
+
+  .instr ul{list-style:none;margin:0 0 8px;padding:0}
+
+  .instr li{position:relative;padding:11px 14px 11px 40px;background:var(--surface-2);border:1px solid var(--line);border-radius:7px;margin-bottom:9px;font-size:15px;color:var(--text)}
+
+  .instr li::before{content:attr(data-k);position:absolute;left:12px;top:11px;font-family:var(--mono);font-size:11px;color:#fff;background:var(--ink-2);width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center}
+
+  .instr li.flag{border-color:var(--cond)}
+
+  .instr li.flag::before{background:var(--cond)}
+
+  .instr li.stop{border-color:var(--hold)}
+
+  .instr li.stop::before{background:var(--hold)}
+
+  .reviewer-field{margin:18px 0 4px}
+
+  .reviewer-field label{display:block;font-family:var(--sans);font-weight:600;font-size:14px;margin-bottom:6px;color:var(--text)}
+
+  .exportbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+
+ 
+
+  /* verdict extras: prompting guide + cost-benefit */
+
+  details.section{margin-top:18px;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);padding:0}
+
+  details.section > summary{font-family:var(--sans);font-weight:700;font-size:16px;color:var(--ink);padding:16px 18px;cursor:pointer;list-style:none}
+
+  details.section > summary::-webkit-details-marker{display:none}
+
+  details.section > summary::before{content:"+ ";color:var(--cond);font-family:var(--mono)}
+
+  details.section[open] > summary::before{content:"– "}
+
+  .section-body{padding:0 18px 18px}
+
+  .section-body h5{font-family:var(--sans);font-weight:700;font-size:14.5px;color:var(--ink-2);margin:14px 0 6px}
+
+  .section-body p{font-size:14px;color:var(--text);margin:0 0 8px;max-width:64ch}
+
+  .section-body ul{margin:0 0 8px;padding-left:20px}
+
+  .section-body li{font-size:14px;color:var(--text);margin-bottom:5px}
+
+  .section-body li b{color:var(--ink)}
+
+  .example{border-left:3px solid var(--cond);background:var(--surface);padding:11px 14px;margin:10px 0;border-radius:0 6px 6px 0}
+
+  .example .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--cond);display:block;margin-bottom:5px}
+
+  .example .ex-prompt{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:8px 10px;margin:4px 0;white-space:pre-wrap}
+
+ 
+
+  .cb-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:8px 0 14px}
+
+  .cb-field label{display:block;font-family:var(--sans);font-weight:600;font-size:13.5px;color:var(--text);margin-bottom:5px}
+
+  .cb-field .chips{margin-top:2px}
+
+  .cb-out{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:16px 18px;margin-top:6px}
+
+  .cb-out .row{display:flex;justify-content:space-between;gap:14px;font-size:14px;padding:7px 0;border-bottom:1px dotted var(--line)}
+
+  .cb-out .row:last-of-type{border-bottom:none}
+
+  .cb-out .row .k{color:var(--muted)}
+
+  .cb-out .row .v{font-family:var(--sans);font-weight:700;color:var(--ink);text-align:right}
+
+  .cb-summary{font-size:15px;color:var(--ink-2);margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+
+  .cb-summary b{color:var(--ink)}
+
+  .cb-caveat{font-size:12.5px;color:var(--muted);margin-top:10px;font-style:italic}
+
+  .cb-refs{list-style:none;padding-left:0;margin:4px 0 0}
+
+  .cb-refs li{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:7px;padding-left:24px;text-indent:-24px}
+
+ 
+
+  .footnote{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);text-align:center;padding:18px 0 40px}
+
+ 
+
+  @media (max-width:820px){
+
+    .grid{grid-template-columns:1fr;gap:24px}
+
+    .transect{position:static}
+
+    .transect .stations{display:flex;overflow-x:auto;gap:0;padding-bottom:6px}
+
+    .station{grid-template-columns:1fr;gap:6px;padding:0 18px 0 0;min-width:104px}
+
+    .station .rail{justify-content:flex-start}
+
+    .station:not(:last-child) .rail::after{top:12px;bottom:auto;left:24px;right:-72px;width:auto;height:2px}
+
+    .station .meta .reading{margin-top:3px}
+
+    .panel{padding:24px 20px}
+
+    .cb-grid{grid-template-columns:1fr}
+
+  }
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  @media print{
+
+    body{background:#fff}
+
+    .topbar,header.masthead,.transect,.nav,.exportbar,.footnote,.step-tag{display:none!important}
+
+    .grid{display:block}
+
+    .panel{border:none;box-shadow:none;padding:0;min-height:0}
+
+    .panel h3{font-size:22px}
+
+    .instr li{background:#fff}
+
+    details.section{border:none}
+
+    details.section[open] .section-body{display:block}
+
+  }
+
+</style>
+
+</head>
+
+<body>
+
+ 
+
+<div class="wrap topbar"><button class="lang" id="langbtn"></button></div>
+
+ 
+
+<header class="masthead">
+
+  <div class="wrap">
+
+    <div class="eyebrow"><span class="dot-live"></span> <span id="m-eyebrow"></span></div>
+
+    <h1 id="brand">Transect</h1>
+
+    <p class="lede" id="m-lede"></p>
+
+  </div>
+
+</header>
+
+ 
+
+<main>
+
+  <div class="wrap">
+
+    <div class="grid">
+
+      <nav class="transect" aria-label="Progress"><h2 id="t-title"></h2><div class="stations" id="stations"></div></nav>
+
+      <section class="panel" id="panel" aria-live="polite"></section>
+
+    </div>
+
+  </div>
+
+  <p class="footnote" id="footnote"></p>
+
+</main>
+
+ 
+
+<script>
+
+/* ============================================================ LANGUAGE ============================================================ */
+
+let lang = (navigator.language||'').toLowerCase().startsWith('tr') ? 'tr' : 'en';
+
+const L = o => o[lang];
+
+ 
+
+const UI = {
+
+  en:{
+
+    brand:"Transect",
+
+    eyebrow:"Field tool · runs locally in your browser · your data stays here",
+
+    lede:"A decision tool for conservation NGOs weighing an AI tool, one task at a time. Tap through a few short questions for <b>one task</b>, and Transect writes the verdict, the conditions, and the human checks for you.",
+
+    transect:"The path",
+
+    footnote:"Implements the per-task adoption framework from “A Framework for Assessing the Impacts of AI in Conservation”. Open offline. Use Save or Print at the verdict to keep a record.",
+
+    langbtn:"Türkçe",
+
+    back:"Back",cont:"Continue",last:"See result",
+
+    save:"Save record (.json)",print:"Print / PDF",reset:"Check another task",
+
+    station:"Station",
+
+    rd:{pass:"Pass",cond:"Condition",hold:"Hold",log:"Logged"},
+
+    gate:{fit:"Fit",environmental:"Environmental",privacy:"Data",epistemic:"Trust",relational:"Reception"},
+
+    pillstatus:{pass:"pass",cond:"condition",hold:"hold"},
+
+    verdict:{GO:"Adopt",COND:"Adopt with conditions",HOLD:"Hold / rethink"},
+
+    rationale:{
+
+      GO:"Every station came back clear for <b>{task}</b>. AI is a sound fit here.",
+
+      COND:"<b>{task}</b> is worth using, but only with the steps below in place.",
+
+      HOLD:"At least one station stopped <b>{task}</b>. Fix the red items below before using AI, or keep the task AI free."
+
+    },
+
+    instrHead:"What to do",
+
+    reviewerLabel:"Who checks and signs off (the second eye)",
+
+    reviewerPh:"Name one person responsible before this goes out",
+
+    errTask:"Please name the task first.",
+
+    errBoth:"Please answer both questions.",
+
+    errValue:"Pick at least one kind of help.",
+
+    errOne:"Please answer the question.",
+
+    /* prompting guide */
+
+    pgTitle:"How to get the most from this tool",
+
+    pgIntro:"Two things make AI useful for a small conservation team: prompts that do not waste energy or money, and prompts that get a usable answer the first time. Below are practical habits and two worked examples for common NGO tasks.",
+
+    pgEffHead:"Use less energy and money",
+
+    pgEff:[
+
+      {en:"<b>Keep prompts short and specific.</b> A clear request gets a usable answer in one try, so you are not paying for repeated attempts."},
+
+      {en:"<b>Reuse a good answer.</b> If a draft works, save it and edit by hand instead of regenerating it."},
+
+      {en:"<b>Do not regenerate the same thing</b> hoping for something better. Edit what you have, or change the instruction."},
+
+      {en:"<b>Match the model to the task.</b> A smaller, faster model (often called mini, flash, lite, or fast) is enough for routine writing and summaries. Save the large model for genuinely hard work."}
+
+    ],
+
+    pgQualHead:"Get a better answer the first time",
+
+    pgQual:[
+
+      {en:"<b>Give the AI a role, a goal, a few constraints, and a format.</b> For example: act as a grants officer, write a 150-word summary for a marine conservation funder, plain language, no jargon."},
+
+      {en:"<b>Ask it to cite sources</b> and to mark anything it is unsure of, so you know what to verify. AI can invent references, so always check them."},
+
+      {en:"<b>Ask for a first draft, not a final version.</b> Treat the output as raw material your team shapes, not something to publish as-is."},
+
+      {en:"<b>Ask for several versions at once.</b> Instead of running the same task many times, ask for three options in one go and pick the best. This is the efficient way to reframe one project description for different funders or different application questions."},
+
+      {en:"<b>For facts and figures, cross-check across two or three tools.</b> Ask the same question of a few AI tools and trust the answer more where they agree: a single answer is not proof it is right, and tools invent things. This costs extra energy, so save it for outputs where accuracy really matters, not routine drafting."}
+
+    ],
+
+    pgEx1Tag:"Example · water quality report",
+
+    pgEx1P1:"Instead of: “write a water quality report”.",
+
+    pgEx1Prompt:"Act as an environmental scientist. Using the data I paste below, write a 1-page first draft of a river water quality summary for our local authority. Plain language. Note any value that looks unusual and say why. Do not invent figures: use only my data. List which numbers you used.",
+
+    pgEx1P2:"This gives a role, a clear output, a check on the data, and a guard against invented numbers.",
+
+    pgEx2Tag:"Example · grant application paragraph",
+
+    pgEx2P1:"You have one project description and three funders. Do not run the task three separate times.",
+
+    pgEx2Prompt:"Here is our project description (pasted below). Rewrite the core paragraph three ways: (1) for a biodiversity funder focused on species outcomes, (2) for a community foundation focused on local people and jobs, (3) for a climate funder focused on carbon and resilience. Keep each under 120 words. Keep all facts the same. Do not add claims that are not in my description.",
+
+    pgEx2P2:"One request, three tailored versions, same facts. Far less effort and far less cost than repeating the task many times.",
+
+    /* cost-benefit */
+
+    cbTitle:"Rough cost-benefit estimate",
+
+    cbIntro:"A quick sense of what this task costs in staff time now, and what it might cost to run through AI. These are rough figures. Adjust them to your own situation.",
+
+    cbQ1:"How long does this task usually take, the current way?",
+
+    cbQ1hint:"Your honest guess, in hours per time you do it.",
+
+    cbQ2:"Rough staff cost per hour (optional)",
+
+    cbQ2hint:"If you know it, in your currency. Leave blank to use a modest default.",
+
+    cbQ3:"Did this task usually need a specialist or an outside contractor?",
+
+    cbQ3opts:{yes:"Yes",sometimes:"Sometimes",no:"No"},
+
+    cbContractor:"What did that specialist or contractor cost, each time?",
+
+    cbContractorHint:"A rough figure per time the task was done, in your currency. Leave blank and we will estimate from your staff rate.",
+
+    cbQ4:"Roughly how often do you do this task?",
+
+    cbQ4opts:{week:"About weekly",month:"A few times a month",rare:"A few times a year"},
+
+    cbCompute:"This task's AI work is",
+
+    cbLightLabel:"light (text)",cbHeavyLabel:"heavy (images, video, lots of data)",
+
+    cbPay:"How do you pay for the AI tool?",
+
+    cbPayOpts:{sub:"A fixed monthly subscription",usage:"Per use (or it is free)"},
+
+    cbSub:"Monthly subscription fee",
+
+    cbSubHint:"What you pay the AI tool each month, in your currency. This one fee usually covers all your tasks, not just this one.",
+
+    cbBtn:"Estimate",
+
+    cbOutTime:"Time saved per month",
+
+    cbOutStaff:"Staff cost freed per month",
+
+    cbOutContractor:"Contractor cost avoided per month",
+
+    cbOutAI:"AI cost per month",
+
+    cbOutYear:"Indicative net saving per year",
+
+    cbHrs:"hours",
+
+    cbSummaryTmpl:"If this replaces about {hrs} hours of staff time a month at {rate} per hour, the freed staff cost is roughly {save} a year. The AI cost is small next to that.",
+
+    cbSubNote:"You entered a monthly subscription. That fee covers all the tasks you run, so charging the whole amount to this one task overstates its cost. The real cost of this task alone is a fraction of the fee.",
+
+    cbHidden:"Easy to forget: the current way also costs staff research time, the internet usage of hunting for information, and the silent cost of tasks that never get done because no one had the hours. Those belong on the “before” side of the ledger too.",
+
+    cbCaveat:"Rough estimate only. If you pay per use, light text tasks cost a small fraction of a cent per run and heavier image or data work a few cents per run. Prices and your own staff costs vary, so treat the result as a ballpark, not a quote.",
+
+    cbCurrency:"unit",
+
+    /* evidence: AI vs human, environment */
+
+    cbEvHead:"What the evidence says",
+
+    cbEvIntro:"No study yet compares AI use inside a conservation NGO to a staff member doing the same job. But research on text tasks (writing, summarising, drafting) already gives useful numbers you can adapt.",
+
+    cbEv:[
+
+      {en:"<b>Per page of text, a well-chosen AI is far cheaper and lower-impact than human labour.</b> A comparative life cycle assessment reveals that LLMs (Llama-3-70B/Gemma-2B-it) potentially outperform a human (U.S. resident) across all four environmental and economic metrics: energy consumption (0.020/0.00024 kWh vs. 0.85 kWh per page), carbon emissions (15/0.18 grams vs. 800 grams of CO₂ per page), water consumption (0.14/0.0017 liters vs. 5.7 liters per page), and economic costs ($0.08/0.01 vs. $12.1 per page). Meanwhile, generative AI already accounts for 1.5% of global electricity consumption, and the environmental impacts extend beyond electricity: training a single large model like Microsoft's GPT-3 required approximately 5.4 million liters of freshwater in the U.S. alone, with training-related water consumption concentrated in ways that raise serious social-justice concerns. [1][2]"},
+
+      {en:"<b>Both training and everyday use belong on your side of the ledger.</b> Training a big model is a large one-off footprint: for example, GPT-3 (175B parameters) consumed 1,287 MWh of energy and produced 552 metric tons of CO₂ emissions, equivalent to 50 cars driven for a year. BLOOM required 433 MWh, PaLM required 2,500 MWh, and BERT-base 79 MWh—but each of these footprints is amortised across billions of queries, so your share is small and shrinks as total usage grows. Everyday use (inference) is different: it costs you at roughly full price, about 0.5–1.3 kWh and 150–300 g CO₂e per million words of text, and it is the part you can actually control. Note that choosing to use the tool is still part of the demand that drives the next training run: the footprint is not “someone else's problem” just because no bill reaches your NGO. [2][3]"},
+
+      {en:"<b>Smaller models are usually enough.</b> A smaller-sized model can give adequate quality for routine writing and summaries at a fraction of the cost and footprint, so match the model to the task. [2]"},
+
+      {en:"<b>Real productivity gains for evidence work.</b> AI can retrieve and answer questions from conservation databases at expert level for many queries. [3]"},
+
+      {en:"<b>But scale still matters and equity concerns are real.</b> Ecology researchers caution that AI's total energy, water, and equity costs can pull against environmental goals. Resource extraction for AI hardware disproportionately burdens marginalized communities: 70% of cobalt essential for GPUs is mined in the Democratic Republic of Congo, where child labour and ecological devastation are rampant. Data centres, 60% of which are in the U.S., EU, and China, consume water and energy in drought-stricken regions, diverting resources from local communities. E-waste entrenches inequity further—of 53.6 million metric tons of global e-waste annually, 80% is shipped to Ghana, Nigeria, and Pakistan, where informal recycling exposes workers to toxic fumes and heavy metals. Meanwhile, AI's benefits like ChatGPT or medical diagnostics are concentrated in wealthy nations, with 92% of LLM research funding originating in North America and Europe and Africa contributing less than 1%. To address root causes, firms can adopt binding internal carbon pricing (Siemens charges departments $45 per metric ton of CO₂ to fund renewable projects), and users can demand transparency via tools like the ML CO₂ Impact Calculator to pressure firms to prioritize efficiency. Yet collective action requires education: only 18% of AI consumers recognize the link between LLMs and climate change. [3][6]"},
+
+      {en:"<b>Weigh the ethics, not just the accounting.</b> The costs are not only financial. On the cost side: your use adds to the demand that drives energy- and water-hungry training, and depends on data and hardware supply chains with real labour and environmental burdens elsewhere, so a low bill does not mean a clean conscience. On the benefit side: freeing scarce staff time and expert budget lets a small NGO do more conservation work, and a well-chosen, right-sized tool keeps that footprint modest. The honest position is neither guilt-free convenience nor blanket refusal, but using it deliberately, sparingly, and for work that genuinely advances your mission. [3][6]"}
+
+    ],
+
+    cbEvNote:"Note: figures are per unit of text and come from general studies, not conservation NGOs. Use them as ballpark ranges. The 40–150× / 1200–4400× figures are from a peer-reviewed comparison (ref 1); double-check any citation before quoting it in your own work.",
+
+    cbRefHead:"References",
+
+    cbRefs:[
+
+      {en:"[1] Chen et al. (2025) Current rates of global electricity consumption. ESA Journals, Ecology and Society. https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/fee.70021"},
+
+      {en:"[2] Iyer R, Christie AP, Madhavapeddy A, Reynolds S, Sutherland W, et al. (2025) Careful design of Large Language Model pipelines enables expert-level retrieval of evidence-based information from syntheses and databases. PLOS ONE 20(5): e0323563. https://doi.org/10.1371/journal.pone.0323563"},
+
+      {en:"[3] Out of the Wild: How A.I. Is Transforming Conservation Science. Yale E360. Retrieved from https://e360.yale.edu/features/artificial-intelligence-conservation"},
+
+      {en:"[4] Strubell et al. (2019) Energy and Policy Considerations for Deep Learning in NLP; Lacoste et al. (2019) Quantifying the Carbon Emissions of Machine Learning."},
+
+      {en:"[5] Amiri SMH, Goswami P, Islam MM, Hossen MS, Akter N. The Carbon Cost of Conversation: Sustainability in the Age of Language Models. arXiv:2507.20018. https://arxiv.org/abs/2507.20018"},
+
+      {en:"[6] Norman & Boettiger. The role of AI in ecology's computational carbon footprint; Li et al. (2025) Water consumption and digital equity; Ayana et al. (2024) Disparities in LLM research funding and global participation."}
+
+    ]
+
+  },
+
+  tr:{
+
+    brand:"Rota",
+
+    eyebrow:"Karar aracı · tarayıcınızda internetsiz çalışır · bilginiz kimseyle paylaşılmaz",
+
+    lede:"Doğa koruma STK'ları için, yapay zekâ kullanımını görev bazlı ele alarak değerlendirmeye yardımcı olan bir karar aracı. <b>Tek bir görev</b> seçerek birkaç kısa soruyu yanıtlamanız yeterli; kullanım kararını, koşullarını ve gereken kontrolleri Rota sizin için derlesin.",
+
+    transect:"Yol",
+
+    footnote:"Bu araç, “Doğa Korumada Yapay Zekânın Etkilerini Değerlendirme Çerçevesi” çalışmasındaki, her görevi ayrı ele alan çerçeveyi temel alır. İnternet bağlantısı olmadan da açabilirsiniz. Kaydınızı tutmak için karar ekranındaki Kaydet ya da Yazdır düğmesini kullanabilirsiniz.",
+
+    langbtn:"English",
+
+    back:"Geri",cont:"Devam",last:"Sonucu gör",
+
+    save:"Kaydı indir (.json)",print:"Yazdır / PDF",reset:"Başka görev değerlendir",
+
+    station:"İstasyon",
+
+    rd:{pass:"Geçer",cond:"Koşullu",hold:"Durdur",log:"Kaydedildi"},
+
+    gate:{fit:"Uygunluk",environmental:"Çevresel",privacy:"Veri",epistemic:"Güven",relational:"Algı"},
+
+    pillstatus:{pass:"geçer",cond:"koşul",hold:"durdur"},
+
+    verdict:{GO:"Kullan",COND:"Koşullarla kullan",HOLD:"Durdur / yeniden düşün"},
+
+    rationale:{
+
+      GO:"<b>{task}</b> için bütün istasyonlar sorunsuz geçti. Yapay zekâ burada uygun bir seçim gibi görünüyor.",
+
+      COND:"<b>{task}</b> görevinde yapay zekâ aracından yararlanmak değerli; ancak aşağıdaki adımları göz önünde bulundurmanız gerekir.",
+
+      HOLD:"En az bir istasyon <b>{task}</b> için durdu. Yapay zekâyı kullanmadan önce aşağıdaki kırmızı maddeleri giderebilir ya da bu görevi yapay zekâ olmadan yapabilirsiniz."
+
+    },
+
+    instrHead:"Yapılacaklar",
+
+    reviewerLabel:"Kim kontrol edip onaylayacak? (ikinci bir çift göz)",
+
+    reviewerPh:"Bu iş dışarı çıkmadan önce sorumluluğu üstlenecek bir kişinin adını yazabilirsiniz",
+
+    errTask:"Lütfen önce görevi yazın.",
+
+    errBoth:"Lütfen iki soruyu da yanıtlayın.",
+
+    errValue:"Lütfen en az bir yardım türü seçin.",
+
+    errOne:"Lütfen soruyu yanıtlayın.",
+
+    /* prompting guide */
+
+    pgTitle:"Bu araçtan en iyi şekilde nasıl yararlanırsınız?",
+
+    pgIntro:"Vakit ve kişi sayısı açısından kısıtlı ekipler için yapay zekâyı asıl faydalı kılan iki şey var: enerji ve para israf etmeyen istemler (istem, yapay zekâya yazdığınız talimattır) ve daha ilk seferde işe yarar bir yanıt getiren istemler. Aşağıda hem işinize yarayacak pratik alışkanlıkları hem de sık karşılaşılan görevler için iki örneği bulabilirsiniz.",
+
+    pgEffHead:"Daha az enerji ve para harcayın",
+
+    pgEff:[
+
+      {tr:"<b>İstemlerinizi kısa ve net tutun.</b> Net bir istek çoğu zaman tek denemede işe yarar bir yanıt getirir; böylece aynı şeyi tekrar tekrar denemek için ödeme yapmak zorunda kalmazsınız."},
+
+      {tr:"<b>İyi bir yanıtı yeniden kullanın.</b> Bir taslak işinize yarıyorsa onu kaydedip, yeniden ürettirmek yerine elle düzenleyebilirsiniz."},
+
+      {tr:"<b>Aynı şeyi tekrar tekrar ürettirmeyin.</b> Daha iyisini umarak baştan ürettirmek yerine elinizdekini düzenleyebilir ya da yönergeyi değiştirebilirsiniz."},
+
+      {tr:"<b>Modeli işe göre seçin.</b> Daha küçük ve hızlı bir model (çoğu zaman mini, flash, lite ya da fast diye geçer) rutin yazım ve özetler için yeterli olur; büyük modeli gerçekten zorlu işlere saklayabilirsiniz."}
+
+    ],
+
+    pgQualHead:"Daha ilk seferde daha iyi bir yanıt alın",
+
+    pgQual:[
+
+      {tr:"<b>Yapay zekâya bir rol, bir hedef, birkaç sınır ve bir biçim verin.</b> Örneğin: “Bir fon başvurusu uzmanı gibi davran; deniz koruma fonu için 150 kelimelik bir özet yaz; sade bir dil kullan, teknik terim kullanma.”"},
+
+      {tr:"<b>Kaynak göstermesini isteyin</b> ve emin olmadığı yerleri işaretlemesini rica edin; böylece neyi doğrulamanız gerektiğini bilirsiniz. Yapay zekâ zaman zaman kaynak halüsinasyonu yaptığı için bunları her zaman kontrol etmekte fayda var."},
+
+      {tr:"<b>Son sürümü değil, ilk taslağı isteyin.</b> Çıktıyı, olduğu gibi yayınlanacak bir metin olarak değil, ekibinizin üzerinde değişiklikler yapacağı bir ilk versiyon olarak görebilirsiniz."},
+
+      {tr:"<b>Birden fazla sürümü tek seferde isteyin.</b> Aynı görevi defalarca çalıştırmak yerine tek bir istekte üç seçenek isteyip en iyisini seçebilirsiniz. Tek bir proje tanımını farklı fon verenlere ya da farklı başvuru sorularına göre yeniden yazmanın en verimli yolu budur."},
+
+      {tr:"<b>Önemli bir görev söz konusuysa iki üç aracı karşılaştırabilirsiniz.</b> Aynı soruyu birkaç yapay zekâ aracına sorup hangi cevabın size daha çok uyduğuna bakabilirsiniz: tek bir cevap, o bilginin doğru olduğunu göstermez ve araçlar zaman zaman bilgi halüsinasyonu yaşar. Bu biraz fazladan enerji harcadığı için, karşılaştırmayı her rutin iş için değil, farklı seçeneklere sahip olmanızın gerçekten önemli olduğu çıktılar için saklamanız yeterli."}
+
+    ],
+
+    pgEx1Tag:"Örnek · su kalitesi raporu",
+
+    pgEx1P1:"“Su kalitesi raporu yaz” demek yerine şöyle deneyebilirsiniz:",
+
+    pgEx1Prompt:"Bir çevre bilimci gibi davran. Aşağıya yapıştırdığım verilerle, yerel idare için 1 sayfalık bir nehir su kalitesi özetinin ilk taslağını yaz. Sade bir dil kullan. Olağandışı görünen değerleri belirt ve nedenini yaz. Rakam uydurma; yalnızca benim verilerimi kullan. Hangi sayıları kullandığını da listele.",
+
+    pgEx1P2:"Bu istem; yapay zekâya bir rol, net bir çıktı, veriler üzerinde bir kontrol ve uydurma sayılara karşı bir koruma sağlar. Buna rağmen yer yer halüsinasyon veriler olabilir.",
+
+    pgEx2Tag:"Örnek · fon başvurusu paragrafı",
+
+    pgEx2P1:"Elinizde tek bir proje tanımı ve üç ayrı fon veren var; bu görevi üç kez ayrı ayrı çalıştırmanıza gerek yok.",
+
+    pgEx2Prompt:"Aşağıda proje tanımımız var. Ana paragrafı üç şekilde yeniden yaz: (1) tür sonuçlarına odaklanan bir biyoçeşitlilik fonu için, (2) yerel halka ve istihdama odaklanan bir topluluk vakfı için, (3) karbon ve dayanıklılığa odaklanan bir iklim fonu için. Her biri 120 kelimenin altında olsun. Tüm bilgiler aynı kalsın. Tanımımda olmayan iddialar ekleme.",
+
+    pgEx2P2:"Tek bir istek, üçü de farklı uyarlanmış fakat kullanılan bilgiler hep aynı. Bu, aynı görevi defalarca tekrarlamaktan çok daha az emek ve çok daha az maliyet demek.",
+
+    /* cost-benefit */
+
+    cbTitle:"Yaklaşık maliyet-fayda tahmini",
+
+    cbIntro:"Bu görevin şu anki yöntemle personel zamanı olarak ne kadara mal olduğuna ve yapay zekâyla yapmanın yaklaşık ne kadar tutabileceğine hızlı bir bakış atalım. Öneri olarak yaklaşık rakamlar mevcut; kendi görevinize göre değiştirebilirsiniz.",
+
+    cbQ1:"Verdiğiniz görev şu anki işleyiş şeklinizde yaklaşık ne kadar sürüyor?",
+
+    cbQ1hint:"Bu görevi her yerine getirdiğinizde bunun kaç saat sürdüğüne dair yaklaşık bir tahmin verebilirsiniz.",
+
+    cbQ2:"Saat başına yaklaşık personel maliyeti (zorunlu değil)",
+
+    cbQ2hint:"Biliyorsanız kendi para biriminizle yazabilirsiniz. Boş bırakırsanız ortalama bir değer kullanılır.",
+
+    cbQ3:"Bu görev genellikle bir uzman ya da dışarıdan iş yaptırdığınız birini gerektiriyor muydu?",
+
+    cbQ3opts:{yes:"Evet",sometimes:"Bazen",no:"Hayır"},
+
+    cbContractor:"O uzman ya da dışarıdan tuttuğunuz kişi her seferinde ne kadara mal oluyordu?",
+
+    cbContractorHint:"Bu görevi her yaptığınızda ödediğiniz yaklaşık tutarı kendi para biriminizle yazabilirsiniz. Boş bırakırsanız personel ücretinizden yola çıkarak biz tahmin ederiz.",
+
+    cbQ4:"Bu görevi yaklaşık ne sıklıkta yapıyorsunuz?",
+
+    cbQ4opts:{week:"Haftada bir civarı",month:"Ayda birkaç kez",rare:"Yılda birkaç kez"},
+
+    cbCompute:"Bu görevde yapay zekânın yapacağı iş",
+
+    cbLightLabel:"hafif (metin)",cbHeavyLabel:"ağır (görsel, video, çok veri)",
+
+    cbPay:"Yapay zekâ aracı için nasıl ödeme yapıyorsunuz?",
+
+    cbPayOpts:{sub:"Sabit aylık abonelik",usage:"Kullanım başına (ya da ücretsiz)"},
+
+    cbSub:"Aylık abonelik ücreti",
+
+    cbSubHint:"Yapay zekâ aracına her ay ödediğiniz tutarı kendi para biriminizle yazabilirsiniz. Bu tek ücret genellikle yalnızca bu görevi değil, yaptığınız tüm işleri kapsar.",
+
+    cbBtn:"Hesapla",
+
+    cbOutTime:"Ayda kazanılan zaman",
+
+    cbOutStaff:"Ayda kazanılan personel maliyeti",
+
+    cbOutContractor:"Ayda dışarıya ödemekten kurtulduğunuz tutar",
+
+    cbOutAI:"Aylık yapay zekâ maliyeti",
+
+    cbOutYear:"Yıllık tahmini net tasarruf",
+
+    cbHrs:"saat",
+
+    cbSummaryTmpl:"Bu iş ayda yaklaşık {hrs} saatlik personel zamanının yerini alırsa (saati {rate}), yılda kabaca {save} değerinde personel zamanı kazanmış olursunuz. Yapay zekânın maliyeti bunun yanında çok küçük kalır.",
+
+    cbSubNote:"Aylık bir abonelik girdiniz. Bu ücret çalıştırdığınız tüm görevleri kapsadığı için, tutarın tamamını yalnızca bu göreve yüklemek maliyeti olduğundan büyük gösterir. Tek başına bu görevin gerçek maliyeti, ücretin ancak küçük bir kısmıdır.",
+
+    cbHidden:"Gözden kaçması kolay: şu anki yöntem ayrıca personelin araştırma zamanına, bilgi ararken harcanan internet kullanımına ve kimsenin vakti olmadığı için hiç yapılamayan işlerin sessiz maliyetine de mal oluyor. Bunları da hesabın “önce” tarafına yazmakta fayda var.",
+
+    cbCaveat:"Bu yalnızca yaklaşık bir tahmindir. Kullanım başına ödüyorsanız: hafif metin görevleri çalıştırma başına bir kuruşun küçük bir kısmı, daha ağır görsel veya veri işleri ise çalıştırma başına birkaç kuruş tutar. Fiyatlar ve kendi personel maliyetiniz değiştiği için sonucu kesin bir fiyat değil, yaklaşık bir değer olarak görebilirsiniz.",
+
+    cbCurrency:"birim",
+
+    /* kanıt: yapay zekâ vs insan, çevre */
+
+    cbEvHead:"Araştırmalar ne diyor?",
+
+    cbEvIntro:"Bir koruma STK'sında yapay zekâ kullanımını, aynı işi yapan bir çalışanla doğrudan karşılaştıran bir araştırma henüz yok. Yine de metin işleri (yazma, özetleme, taslak çıkarma) üzerine yapılan araştırmalar, kendi durumunuza uyarlayabileceğiniz işe yarar sayılar sunuyor.",
+
+    cbEv:[
+
+      {tr:"<b>Bir sayfalık bir metin çıktısı üretmek, doğru seçilmiş bir yapay zekâ aracıyla insan emeğinden çok daha ucuz ve çok daha düşük etkilidir.</b> Yapılan karşılaştırmalı yaşam döngüsü değerlendirmesi, LLM'lerin (Llama-3-70B/Gemma-2B-it) bir insana (ABD sakinlerine) kıyasla dört çevresel ve ekonomik metriğin tamamında potansiyel olarak daha iyi performans gösterdiğini ortaya koymaktadır: enerji tüketimi (0,020/0,00024 kWh ve 0,85 kWh sayfa başına), karbon emisyonları (15/0,18 gram ve 800 gram CO₂ sayfa başına), su tüketimi (0,14/0,0017 litre ve 5,7 litre sayfa başına) ve ekonomik maliyetler (0,08/0,01 dolar ve 12,1 dolar sayfa başına). Bu arada, üretken yapay zekâ zaten küresel elektrik tüketiminin %1,5'ini oluşturmakta ve çevresel etkiler elektrik tüketiminin ötesine uzanmaktadır: Microsoft'un GPT-3 gibi tek bir büyük modeli eğitmek, yalnızca ABD'de yaklaşık 5,4 milyon litre temiz su gerektirmiş ve eğitimle ilgili su tüketimi sosyal adalet kaygıları doğuracak şekilde yoğunlaşmıştır. [1][2]"},
+
+      {tr:"<b>Büyük bir yapay zekâ modelini eğitmek tek seferlik büyük bir karbon ayak izidir, ancak bu etkiler milyarlarca sorguya yayıldığı için kişisel payınız küçüktür.</b> Örneğin, GPT-3 (175 milyar parametre) 1.287 MWh enerji tüketmiş ve 552 metrik ton CO₂ emisyonu üretmiştir—bir yıl boyunca 50 araba kullanmaya eşdeğerdir. BLOOM 433 MWh, PaLM 2.500 MWh, BERT-base ise 79 MWh gerektirmiş; ancak bu ayak izlerin her biri milyarlarca sorguya bölündüğü için payınız küçüktür ve toplam kullanım arttıkça daha da küçülür. Günlük kullanımınız (yani aracı her çalıştırmanız) ise farklıdır: milyon kelime metin başına kabaca 0,5–1,3 kWh ve 150–300 g CO₂e tutar ve asıl kontrol edebildiğiniz kısım da budur. Aracı kullanmayı seçmek, bir sonraki eğitim turunu tetikleyen talebin de bir parçasıdır; bu ayak iz “başkasının problemi” değildir. [2][3]"},
+
+      {tr:"<b>Daha küçük modeller çoğu zaman yeterlidir.</b> Doğru boyutta bir model, rutin yazım ve özetler için yeterli kaliteyi çok daha düşük maliyet ve karbon ayak iziyle verebilir; bu yüzden modeli işe göre seçmekte fayda var. [2]"},
+
+      {tr:"<b>Doğa koruma alanında yapay zekâ araçları, cevap kaliteleriyle gerçek bir verimlilik artışına katkıda bulunabilir.</b> [3]"},
+
+      {tr:"<b>Ölçek hala önemlidir ve eşitlik endişeleri gerçektir.</b> Ekoloji araştırmacıları, yapay zekânın toplam enerji, su ve eşitlik maliyetlerinin çevresel hedeflere ters düşebileceğini uyarıyor. Yapay zekâ donanımı için hammadde çıkarılması, marjinal toplulukları orantısız bir şekilde yükü altına almaktadır: GPU'lar için gerekli kobaltın %70'i Demokratik Kongo Cumhuriyeti'nde çıkarılmakta, çocuk işçiliğinin ve ekolojik yıkımın yaygın olduğu yerlerde. Veri merkezlerinin %60'ı ABD, AB ve Çin'de bulunmakta ve su/enerji açısından kuraklık bölgelerinde tüketim yaparak yerel toplulukların kaynaklarını yönlendirmektedir. E-atıklar eşitsizliği daha da derinleştirmektedir: yıllık 53,6 milyon metrik ton küresel e-atık atığının %80'i Gana, Nijerya ve Pakistan'a gönderilmekte, gayri resmi geri dönüşüm işçilerini zehirli gazlara ve ağır metallere maruz bırakmaktadır. Bu arada ChatGPT ya da tıbbi teşhis gibi yapay zekânın faydaları zengin ülkelerde yoğunlaşmakta, LLM araştırması finansmanının %92'si Kuzey Amerika ve Avrupa'da, Afrika ise %1'den azında yer almaktadır. Kök nedenleri gidermek için, firmalar metrik ton CO₂ başına 45 dolar (Siemens örneğinde olduğu gibi) gibi bağlayıcı dahili karbon fiyatlandırması uygulayabilir ve kullanıcılar firmalar üzerinde baskı yapmak için ML CO₂ Etki Hesaplayıcısı gibi araçlarla şeffaflık talep edebilirler. Ancak kolektif harekât eğitim gerektirmektedir: yapay zekâ tüketicilerinin sadece %18'i LLM'ler ile iklim değişikliği arasında bağlantı kurmaktadır. [3][6]"},
+
+      {tr:"<b>Yalnızca hesabı değil, etiği de tartın.</b> Maliyetler yalnızca parasal değil. Maliyet tarafında: kullanımınız, enerji ve su yoğun eğitimi süren talebe eklenir ve başka yerlerde gerçek emek ve çevre yükü taşıyan veri ile donanım tedarik zincirlerine dayanır; faturanın düşük olması vicdanınızın rahat olacağı anlamına gelmez. Fayda tarafında: kıt personel zamanını ve uzman bütçesini boşa çıkarmak, küçük bir STK'nın daha fazla koruma işi yapabilmesini sağlar; doğru seçilmiş, doğru boyutta bir araç da bu ayak izini mütevazı tutar. En dürüst tutum, ne vicdanı rahat bir kolaylık ne de her şeyi tümden reddetmektir; aracı bilinçli, tutumlu ve gerçekten misyonunuzu ilerleten işler için kullanmaktır. [3][6]"}
+
+    ],
+
+    cbEvNote:"Not: bu sayılar birim metin başınadır ve doğa koruma STK'larından değil, genel araştırmalardan gelir; bu yüzden onları yaklaşık aralıklar olarak görebilirsiniz.",
+
+    cbRefHead:"Kaynaklar",
+
+    cbRefs:[
+
+      {tr:"[1] Chen vd. (2025) Küresel elektrik tüketimi mevcut oranları. ESA Journals, Ecology and Society. https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/fee.70021"},
+
+      {tr:"[2] Iyer R, Christie AP, Madhavapeddy A, Reynolds S, Sutherland W, vd. (2025) Büyük dil modeli boru hatlarının dikkatli tasarımı, sentezler ve veritabanlarından delile dayalı bilgilerin uzman düzeyinde alınmasını sağlar. PLOS ONE 20(5): e0323563. https://doi.org/10.1371/journal.pone.0323563"},
+
+      {tr:"[3] Out of the Wild: How A.I. Is Transforming Conservation Science (Vahşi Doğadan: Yapay Zekâ Doğa Korumasını Nasıl Dönüştürüyor). Yale E360. Erişim: https://e360.yale.edu/features/artificial-intelligence-conservation"},
+
+      {tr:"[4] Strubell vd. (2019) Doğal Dil İşlemede Derin Öğrenmenin Enerji ve Politika Hususları; Lacoste vd. (2019) Makine Öğreniminin Karbon Emisyonlarının Kantitatif Değerlendirilmesi."},
+
+      {tr:"[5] Amiri SMH, Goswami P, Islam MM, Hossen MS, Akter N. Konuşmanın Karbon Maliyeti: Dil Modellerinin Çağında Sürdürülebilirlik. arXiv:2507.20018. https://arxiv.org/abs/2507.20018"},
+
+      {tr:"[6] Norman & Boettiger. Yapay Zekâ'nın ekolojinin hesaplama karbon ayak izindeki rolü; Li vd. (2025) Su tüketimi ve dijital eşitlik; Ayana vd. (2024) LLM araştırması finansmanı ve küresel katılımda eşitsizlikler."}
+
+    ]
+
+  }
+
+};
+
+const t = k => k.split('.').reduce((o,p)=>o[p],UI[lang]);
+
+ 
+
+/* ============================================================ STATE ============================================================ */
+
+const state = {
+
+  task:"",bottleneck:[],counterfactual:"",
+
+  value:[],taskclass:"",
+
+  compute:"",greentool:"",
+
+  datatypes:[],sensitive:[],anonplan:"",community:"",
+
+  fabrisk:"",consequence:"",
+
+  audience:"",perception:"",volunteers:"",
+
+  reviewer:"",
+
+  cb:{hours:"",rate:"",specialist:"",contractorcost:"",freq:"",compute:"",paymodel:"",sub:""}
+
+};
+
+ 
+
+/* ============================================================ STATIONS ============================================================ */
+
+const STATIONS = [
+
+  {key:"baseline",     name:{en:"Task",tr:"Görev"}},
+
+  {key:"fit",          name:{en:"Fit",tr:"Uygunluk"}},
+
+  {key:"environmental",name:{en:"Environmental",tr:"Çevresel"}},
+
+  {key:"epistemic",    name:{en:"Trust",tr:"Güven"}},
+
+  {key:"privacy",      name:{en:"Data",tr:"Veri"}},
+
+  {key:"relational",   name:{en:"Reception",tr:"Algı"}},
+
+  {key:"verdict",      name:{en:"Result",tr:"Sonuç"},terminus:true}
+
+];
+
+const STATION_SUB = {
+
+  baseline:{en:"the task",tr:"görev"}, fit:{en:"right kind of help?",tr:"doğru yardım mı?"},
+
+  environmental:{en:"energy cost",tr:"enerji maliyeti"}, epistemic:{en:"can you trust it?",tr:"ona güvenebilir misiniz?"},
+
+  privacy:{en:"is your data safe?",tr:"verileriniz güvende mi?"},
+
+  relational:{en:"how others see it",tr:"başkaları ne düşünür"}, verdict:{en:"the decision",tr:"karar"}
+
+};
+
+ 
+
+/* ============================================================ STEPS ============================================================ */
+
+const STEPS = [
+
+  {
+
+    station:"baseline",
+
+    tag:{en:"Station 01 · describe the task",tr:"İstasyon 01 · görevi tanımlayın"},
+
+    title:{en:"What is the task?",tr:"Görev nedir?"},
+
+    sub:{en:"Name one task and how it gets done today. Everything that follows is compared against this baseline.",
+
+         tr:"Tek bir görevi ve bu görevin bugün nasıl yapıldığını yazın."},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel" for="task">${L({en:"The task",tr:"Görev"})}</label>
+
+        <p class="hint">${L({en:"Name any one task you are considering AI for. It can be concrete or broad. Examples: drafting a report from your data, summarizing a long document, writing a funding paragraph, planning outreach, or answering routine email.",tr:"Yapay zekâdan yararlanmak istediğiniz herhangi bir görevi yazabilirsiniz; spesifik ya da genel olabilir. Örneğin: verilerinizden bir rapor hazırlamak, uzun bir belgeyi özetlemek, bir fon paragrafı yazmak, tanıtım planlamak ya da rutin e-postaları yanıtlamak."})}</p>
+
+        <input type="text" id="task" placeholder="${L({en:"Draft the river water quality report from the data I collected",tr:"Topladığım verilerle nehir su kalitesi raporunu hazırla"})}" value="${esc(state.task)}" />
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Before AI: what makes this task hard for your team right now?",tr:"Yapay zekâdan önce: bu görev şu anda ekibinizi neden zorluyor?"})}</label>
+
+        <p class="hint">${L({en:"Pick all that apply. These are where AI should help. NGO teams are usually short on time, money, and specialist hands.",tr:"Uygun olanların hepsini işaretleyebilirsiniz. Belirttiğiniz görevi bugünkü yapma şeklinizi değiştirmeyi düşündüren şey nedir?"})}</p>
+
+        ${chips("bottleneck",[
+
+          ["time",{en:"Staff time is tight",tr:"Personel zamanı kısıtlı"}],
+
+          ["cost",{en:"Cost of paid expert or contractor hours",tr:"Uzmana ya da dışarıdan tuttuğunuz kişiye ödenen ücret"}],
+
+          ["expertise",{en:"We lack the in-house expertise",tr:"Kurum içinde uzmanlık eksik"}],
+
+          ["reach",{en:"Reaching funders, community, or the public",tr:"Fon verenlere, topluluğa ya da kamuoyuna ulaşmak"}]],true)}
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Doing it the current way takes about…",tr:"Şu anki yöntemle bu görev yaklaşık ne kadar sürüyor?"})}</label>
+
+        <p class="hint">${L({en:"Your honest guess of the effort without AI.",tr:"Yapay zekâ olmadan ihtiyaç duyduğunuz vakitle ilgili yaklaşık bir tahmin verebilirsiniz."})}</p>
+
+        ${chips("counterfactual",[
+
+          ["days",{en:"Days of work, and/or several people involved",tr:"Bir günden fazla sürüyor ve/veya birkaç kişiye ihtiyaç oluyor"}],
+
+          ["hours",{en:"A few hours",tr:"Birkaç saat sürüyor"}],
+
+          ["minutes",{en:"Minutes",tr:"Dakikalar sürüyor"}]],false)}
+
+      </div>`;},
+
+    collect(){state.task=val("task").trim();},
+
+    validate(){return state.task?"":t("errTask");}
+
+  },
+
+ 
+
+  {
+
+    station:"fit",
+
+    tag:{en:"Station 02 · is AI the right kind of help?",tr:"İstasyon 02 · yapay zekâ doğru türde bir yardım mı?"},
+
+    title:{en:"Fit",tr:"Uygunluk"},
+
+    sub:{en:"What would AI actually add here, and is this the kind of task it handles well?",
+
+         tr:"Yapay zekânın size bu görevde ne kazandıracağını umuyorsunuz? Bu, yapay zekânın yardımcı olabileceği türden bir iş mi?"},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"If AI helped, what would it give you?",tr:"Yapay zekâ bu görevde size yardımcı olsaydı, bu sizin için nasıl gözükürdü?"})}</label>
+
+        <p class="hint">${L({en:"Pick all that apply.",tr:"Uygun olanların hepsini işaretleyebilirsiniz."})}</p>
+
+        ${chips("value",[
+
+          ["access",{en:"Find or reach the required information faster and more accurately",tr:"İhtiyacımız olan bilgilere daha hızlı ve isabetli bir şekilde erişebilmek"}],
+
+          ["synthesis",{en:"Turn rough material into a first draft (notes, data, transcripts)",tr:"Ham materyali ilk taslağa dönüştürmek (notlar, veri, dökümler)"}],
+
+          ["speed",{en:"Do the same work with less staff time and effort",tr:"Aynı işi daha az personel zamanı ve emekle tamamlamak"}],
+
+          ["costreach",{en:"Do something the budget or skills could not otherwise reach",tr:"Bütçenin ya da becerilerin başka türlü ulaşamayacağı bir işi yapmak"}],
+
+          ["creativity",{en:"Invent something new from scratch",tr:"Sıfırdan yeni bir şey üretmek"}]],true)}
+
+        <details class="why"><summary>${L({en:"Why this matters",tr:"Bu neden önemli"})}</summary>
+
+          <p>${L({en:"AI is reliable at finding and drafting, and weak at inventing. If the only thing you want is fully original creation, that is a sign to rethink whether AI fits this task.",tr:"Yapay zekâ; bilgi bulma ve taslak çıkarma konusunda güvenilir, sıfırdan özgün bir şey üretme konusunda ise zayıftır. Tek beklentiniz tamamen özgün bir üretimse, bu görevin yapay zekâya uygun olup olmadığını yeniden düşünmekte fayda var."})}</p>
+
+        </details>
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Does getting this right depend on expert judgement: a call only someone who knows the subject can make?",tr:"Bu görevi doğru yapmak uzman görüşü gerektiriyor mu; yani ancak konuya hâkim birinin verebileceği bir karar mı?"})}</label>
+
+        <p class="hint">${L({en:"For example: deciding what caused a population decline, what a permit rule means legally, or the exact correct species name.",tr:"Örneğin: bir popülasyon düşüşünün nedenini saptamak, bir kuralın hukuki anlamını yorumlamak ya da bir fotoğraf üzerinden doğru türü tespit etmek."})}</p>
+
+        ${chips("taskclass",[
+
+          ["none",{en:"No: it is mostly facts and writing",tr:"Hayır: hâkim olduğumuz bir alan"}],
+
+          ["partly",{en:"Partly: one part needs judgement, one does not",tr:"Kısmen: bir kısmı için uzman görüşü gerekli, bir kısmına da hâkimiz"}],
+
+          ["heavily",{en:"Yes: the heart of it is expert judgement",tr:"Evet: işin özü uzman görüşlerinden geçiyor"}]],false)}
+
+      </div>`;},
+
+    collect(){},
+
+    validate(){if(!state.value.length)return t("errValue"); if(!state.taskclass)return t("errBoth"); return "";},
+
+    reading(){
+
+      if(state.value.length===1&&state.value[0]==="creativity")return "hold";
+
+      if(state.taskclass==="heavily")return "cond";
+
+      if(state.taskclass==="partly")return "cond";
+
+      return "pass";
+
+    }
+
+  },
+
+ 
+
+  {
+
+    station:"environmental",
+
+    tag:{en:"Station 03 · the energy cost",tr:"İstasyon 03 · enerji maliyeti"},
+
+    title:{en:"Environmental",tr:"Çevresel Etki"},
+
+    sub:{en:"Using AI costs energy, but your old way of doing the task also does. Compare the two, and make an informed choice based on your task.",
+
+         tr:"Yapay zekâ kullanımı enerji harcar; fakat görevi eski yönteminizle yapmak da enerji harcıyor. İkisini kabaca karşılaştırabilir ve enerji kullanımınızı göz önünde bulundurarak görev özelinde bir araç seçebilirsiniz."},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"How heavy is the AI work itself?",tr:"Yapay zekâdan yardım almak istediğiniz görevi nasıl kategorize edersiniz?"})}</label>
+
+        ${chips("compute",[
+
+          ["light",{en:"Light: constructing a draft or translating a text",tr:"Hafif: metin taslağı çıkarmak, çeviri yapmak vb."}],
+
+          ["heavy",{en:"Heavy: generating images or videos, or working with a large amount of data",tr:"Ağır: yüksek sayıda veri işlemek, görsel veya video üretmek"}]],false)}
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Are you using a tool and setting that is minimizing your potential energy use?",tr:"Görevinizi yerine getirirken tükettiğiniz enerjiyi optimize etmek için uygun bir araç ve ayar belirlediniz mi?"})}</label>
+
+        <p class="hint">${L({en:"Not sure? Open the guide below.",tr:"Emin değil misiniz? Aşağıdaki rehberi görüntüleyebilirsiniz."})}</p>
+
+        ${chips("greentool",[
+
+          ["yes",{en:"Yes",tr:"Evet"}],
+
+          ["no",{en:"Not yet",tr:"Henüz değil"}],
+
+          ["unsure",{en:"I am not sure",tr:"Emin değilim"}]],false)}
+
+        <details class="guide"><summary>${L({en:"How do I pick a lighter tool?",tr:"Nasıl daha hafif bir araç seçerim?"})}</summary>
+
+          <p class="lead">${L({en:"There is no official energy labels on generative tools yet, so use these as a rule of thumb:",tr:"Yapay zekâ araçlarının henüz resmi bir enerji etiketi yok; bu yüzden şu pratik kurallardan yararlanabilirsiniz:"})}</p>
+
+          <ul>
+
+            <li>${L({en:"<b>Start with the lowest-compute tool that fits the task,</b> and only reach for something heavier if it genuinely falls short.",tr:"<b>Göreve uygun, en az işlem gücü gerektiren araçla başlayın;</b> ancak gerçekten yetersiz kalırsa daha yüksek işlem gücü ayarına geçin."})}</li>
+
+            <li>${L({en:"<b>Try the tool of your choosing at small scale first,</b> and get a feel for how much resource (energy, money, time) it requires in your own setting before you rely on it heavily.",tr:"<b>Kullanmak istediğiniz aracı önce küçük ölçekte deneyin;</b> ona tam olarak güvenmeden önce kendi işinizde ne kadar kaynak (zaman, para, enerji) harcadığını gözlemleyin."})}</li>
+
+            <li>${L({en:"<b>Move to a bigger or more powerful model only when accuracy or decision quality improves enough to justify the extra energy.</b>",tr:"<b>Daha büyük ya da güçlü bir modele, yalnızca doğruluk ya da karar kalitesi fazladan kullanılan enerjiyi haklı çıkaracak kadar arttığında geçin.</b>"})}</li>
+
+            <li>${L({en:"<b>Prefer tools your staff can actually run, check, and explain,</b> rather than a black box no one on the team understands.",tr:"<b>Personelinizin gerçekten kullanabileceği, sonuçlarını kontrol edip açıklayabileceği araçları tercih edin;</b> ekipten kimsenin anlamadığı sistemler yerine."})}</li>
+
+            <li>${L({en:"<b>Keep prompts short and specific,</b> and do not regenerate the same thing over and over.",tr:"<b>İstemlerinizi (yapay zekâ aracına yazdığınız talimatları) kısa ve net tutun;</b> aynı istemi tekrar tekrar ürettirmekten kaçının."})}</li>
+
+          </ul>
+
+        </details>
+
+      </div>`;},
+
+    collect(){},
+
+    validate(){return (state.compute&&state.greentool)?"":t("errBoth");},
+
+    reading(){
+
+      if(state.compute==="heavy"&&state.counterfactual==="minutes")return "hold";
+
+      if(state.compute==="heavy"&&state.counterfactual==="hours")return "cond";
+
+      if(state.greentool==="no"||state.greentool==="unsure")return "cond";
+
+      return "pass";
+
+    }
+
+  },
+
+ 
+
+  {
+
+    station:"epistemic",
+
+    tag:{en:"Station 04 · can you trust the output?",tr:"İstasyon 04 · çıktıya güvenebilir misiniz?"},
+
+    title:{en:"Trust",tr:"Güven"},
+
+    sub:{en:"AI can invent sources, get a real document's content wrong, or miss nuance. Two things matter: how likely is a mistake, and how bad is it if a wrong claim goes out?",
+
+         tr:"Yapay zekâ kaynak uydurabilir, gerçek bir belgenin içeriğini yanlış aktarabilir ya da ince ayrıntıları kaçırabilir. Burada dikkat ettiğimiz iki şey var: hata olasılığı ne kadar yüksek ve yanlış bir bilgi sizin elinizden yayılırsa zararı ne kadar büyük olur?"},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"How likely is a wrong fact, figure, or made-up source?",tr:"Yapay zekâ aracından aldığınız çıktıda yanlış bir bilgi, veri ya da halüsinasyon niteliğinde bir kaynak olma olasılığı ne kadar yüksek?"})}</label>
+
+        ${chips("fabrisk",[
+
+          ["low",{en:"Low: no facts or sources at stake",tr:"Düşük: çıktıda bir kaynak ya da bilgiye ihtiyaç yok"}],
+
+          ["med",{en:"Medium: some figures or references",tr:"Orta: çıktıda bazı veriler ya da kaynaklar var"}],
+
+          ["high",{en:"High: it relies on data, sources, or species and technical terms",tr:"Yüksek: çıktı verilere, kaynaklara, teknik terimlere dayalı"}]],false)}
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"If a wrong claim went out, how bad is the damage?",tr:"Yanlış bir bilgi sizin elinizden paylaşılırsa zararı ne kadar büyük olur?"})}</label>
+
+        ${chips("consequence",[
+
+          ["low",{en:"Low: internal, easy to fix",tr:"Düşük: dışarıyla paylaşmıyoruz, kolayca düzeltilir"}],
+
+          ["med",{en:"Medium: could hurt our public credibility",tr:"Orta: kamuoyundaki itibarımızı etkileyebilir"}],
+
+          ["high",{en:"High: could result in a faulty court case, a funder report, or the scientific record",tr:"Yüksek: bir davada, raporda ya da bilimsel kayıtta sıkıntı olabilir"}]],false)}
+
+        <details class="why"><summary>${L({en:"Why this matters",tr:"Bu neden önemli"})}</summary>
+
+          <p>${L({en:"High stakes do not mean “no”. Checking fixes it. Transect just asks you to name someone to verify the output, the second pair of eyes to look over the result.",tr:"Yüksek risk “yapay zekâ kullanmamalısınız” anlamına gelmez; çıktılarınızı paylaşım öncesi kontrol etmek sorunu ortadan kaldırabilir. Rota bunun önüne geçmek için çıktılarınızı kontrol edip onaylayacak birini belirlemenizi ister. Ekibinizin başvuracağı ikinci bir çift göz olarak da düşünebilirsiniz."})}</p>
+
+        </details>
+
+      </div>`;},
+
+    collect(){},
+
+    validate(){return (state.fabrisk&&state.consequence)?"":t("errBoth");},
+
+    reading(){
+
+      const sev={low:1,med:2,high:3};
+
+      const score=(sev[state.fabrisk]||1)*(sev[state.consequence]||1);
+
+      return score>=3?"cond":"pass";
+
+    }
+
+  },
+
+ 
+
+  {
+
+    station:"privacy",
+
+    tag:{en:"Station 05 · data privacy and ethics",tr:"İstasyon 05 · veri gizliliği ve etik"},
+
+    title:{en:"Data privacy and ethics",tr:"Veri gizliliği ve etik"},
+
+    sub:{en:"When you paste or upload material into an AI tool, that content is usually sent to and processed on the company's servers, not kept on your computer. For a conservation NGO, that can mean protected species locations, community members' personal data, or confidential funder information leaving your control. Check before you upload.",
+
+         tr:"Bir yapay zekâ aracına metin yapıştırdığınızda ya da dosya yüklediğinizde, o içerik sadece sizin bilgisayarınızda kalmaz; şirketin sunucularına gönderilip orada işlenir. Bir doğa koruma STK'sı için bu; korunan tür konumlarının, topluluk üyelerinin kişisel verilerinin ya da gizli fon bilgilerinin kontrolünüzden çıkması anlamına gelebilir. Bu yüzden yüklemeden önce bir kez daha kontrol etmekte fayda var."},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"What kind of content will you share with the AI tool?",tr:"Yapay zekâ aracıyla ne tür bir içerik paylaşacaksınız?"})}</label>
+
+        <p class="hint">${L({en:"Pick all that apply. This decides what you should remove or anonymize before uploading, and each type carries its own risk for conservation work.",tr:"Uygun olanların hepsini işaretleyebilirsiniz. Bu, yüklemeden önce neyi kaldırmanız ya da anonimleştirmeniz gerektiğini belirler; her seçenek kendine özgü bir risk taşır."})}</p>
+
+        ${chips("datatypes",[
+
+          ["internal",{en:"Internal reports or notes",tr:"İç raporlar ya da notlar"}],
+
+          ["species",{en:"Protected-species locations or coordinates",tr:"Korunan tür konumları / koordinatları"}],
+
+          ["personal",{en:"Personal data of community members",tr:"Topluluk üyelerinin kişisel verileri"}],
+
+          ["donor",{en:"Donor or confidential funder information",tr:"Bağışçı ya da gizli fon veren bilgisi"}],
+
+          ["research",{en:"Unpublished research",tr:"Yayınlanmamış araştırma"}],
+
+          ["public",{en:"Only already-public material",tr:"Hali hazırda kamuya açık içerikler"}]],true)}
+
+        <div id="upload-warn"></div>
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Before uploading, will you remove or anonymize the sensitive parts?",tr:"Yüklemeden önce hassas kısımları kaldıracak ya da anonimleştirecek misiniz?"})}</label>
+
+        <p class="hint">${L({en:"Anonymize means replacing names, exact coordinates, and identifying details with general or blurred versions.",tr:"Anonimleştirmek; isimleri, kesin koordinatları ve kimlik belirten ayrıntıları genelleştirmek ya da (silerek, bulanıklaştırarak) görünmez kılmak demektir."})}</p>
+
+        ${chips("anonplan",[
+
+          ["yes",{en:"Yes: I will strip or blur them first",tr:"Evet: hassas bilgileri kaldıracağım ya da bulanıklaştıracağım"}],
+
+          ["partial",{en:"Partly: some, not all",tr:"Kısmen: bazılarını, hepsini değil"}],
+
+          ["no",{en:"No plan to",tr:"Böyle bir planım yok"}],
+
+          ["na",{en:"Not needed: nothing sensitive",tr:"Gerek yok: hassas bir veri kullanmıyoruz"}]],false)}
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Was this material produced by, or is it about, a community you work with?",tr:"Bu içerik, birlikte çalıştığınız bir topluluk tarafından mı üretildi ya da onlarla mı ilgili?"})}</label>
+
+        <p class="hint">${L({en:"If so, the community may have a say over how their data is used. This is sometimes called data sovereignty: the idea that a community keeps control of information about itself.",tr:"Öyleyse o topluluğun, verilerinin nasıl kullanılacağı konusunda söz hakkı olmalı. Topluluklar kendileriyle ilgili bilginin kontrolünü ellerinde tutabilmeli; buna veri egemenliği de diyebiliriz."})}</p>
+
+        ${chips("community",[
+
+          ["yes",{en:"Yes",tr:"Evet"}],
+
+          ["no",{en:"No",tr:"Hayır"}],
+
+          ["unsure",{en:"Not sure",tr:"Emin değilim"}]],false)}
+
+        <div id="consent-flag"></div>
+
+      </div>`;},
+
+    collect(){},
+
+    validate(){
+
+      if(!state.datatypes.length)return t("errOne");
+
+      if(!state.anonplan)return t("errOne");
+
+      if(!state.community)return t("errOne");
+
+      return "";
+
+    },
+
+    reading(){
+
+      const highly=state.datatypes.includes("species")||state.datatypes.includes("personal");
+
+      const hasSensitive=state.datatypes.some(d=>["species","personal","donor","research"].includes(d));
+
+      if(!hasSensitive)return "pass";
+
+      if(highly&&(state.anonplan==="no"||state.anonplan==="partial"))return "hold";
+
+      if(state.anonplan==="no")return "cond";
+
+      if(state.anonplan==="partial")return "cond";
+
+      if(state.community==="yes"&&state.anonplan!=="yes")return "cond";
+
+      return "pass";
+
+    }
+
+  },
+
+ 
+
+  {
+
+    station:"relational",
+
+    tag:{en:"Station 06 · how others will see it",tr:"İstasyon 06 · başkaları ne düşünecek"},
+
+    title:{en:"Reception",tr:"Algı"},
+
+    sub:{en:"Communities, funders, and the public notice AI, sometimes as smart efficiency, sometimes as “they did not really make this”. Who sees it, and could it feel fake?",
+
+         tr:"Topluluklar, fon verenler ya da kamuoyu yapay zekâ araçlarından yararlandığınızı fark edebilir. Çıktılarınızı kim görecek ve bu onlarda nasıl bir algı yaratır?"},
+
+    render(){return `
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Who is the output for?",tr:"Bu çıktıyı kimler görebilir?"})}</label>
+
+        ${chips("audience",[
+
+          ["internal",{en:"Internal use only",tr:"Kimse, organizasyonun dışına çımakayacak"}],
+
+          ["funders",{en:"Funders or partners",tr:"Fon verenler ya da ortaklar"}],
+
+          ["public",{en:"Public or community members",tr:"Kamuoyu ya da topluluk üyeleri"}]],false)}
+
+      </div>
+
+      <div class="q">
+
+        <label class="qlabel">${L({en:"Could people notice the AI and feel you did not really make it?",tr:"İnsanlar yapay zekâyı fark edip sizin bunu aslında kendinizin yapmadığınızı hissedebilir mi?"})}</label>
+
+        ${chips("perception",[
+
+          ["no",{en:"No",tr:"Hayır"}],
+
+          ["maybe",{en:"Maybe",tr:"Belki"}],
+
+          ["yes",{en:"Yes: it is community-facing, they might notice",tr:"Evet: topluluğa dönük, belli olabilir"}]],false)}
+
+      </div>
+
+      <div class="q" id="volq" style="${state.audience==='public'?'':'display:none'}">
+
+        <label class="qlabel">${L({en:"Is there a system in place for checking the content before posting?",tr:"Paylaşılan içerikler bir kontrolden geçiyor mu?"})}</label>
+
+        ${chips("volunteers",[
+
+          ["no",{en:"Yes: it is reviewed first",tr:"Evet: önce kontrol ediliyor"}],
+
+          ["yes",{en:"No: it gets shared freely",tr:"Hayır: serbestçe paylaşılıyor"}]],false)}
+
+      </div>`;},
+
+    collect(){},
+
+    validate(){
+
+      if(!state.audience||!state.perception)return t("errBoth");
+
+      if(state.audience==="public"&&!state.volunteers)return t("errBoth");
+
+      return "";
+
+    },
+
+    reading(){
+
+      if(state.audience==="public"&&state.perception==="yes")return "hold";
+
+      if(state.audience==="public"&&state.perception==="maybe")return "cond";
+
+      if(state.audience==="public"&&state.volunteers==="yes")return "cond";
+
+      if(state.audience==="funders")return "cond";
+
+      if(state.perception==="yes")return "cond";
+
+      return "pass";
+
+    }
+
+  }
+
+];
+
+ 
+
+/* ============================================================ READINGS / VERDICT ============================================================ */
+
+function readingFor(k){const s=STEPS.find(x=>x.station===k);return s&&s.reading?s.reading():null;}
+
+function stationReached(k){return current>STEPS.findIndex(s=>s.station===k);}
+
+function gateReadings(){return {fit:readingFor("fit"),environmental:readingFor("environmental"),epistemic:readingFor("epistemic"),privacy:readingFor("privacy"),relational:readingFor("relational")};}
+
+function verdict(){
+
+  const v=Object.values(gateReadings());
+
+  if(v.includes("hold"))return {code:"HOLD",cls:"hold"};
+
+  if(v.includes("cond"))return {code:"COND",cls:"cond"};
+
+  return {code:"GO",cls:"adopt"};
+
+}
+
+ 
+
+function instrumentation(){
+
+  const g=gateReadings(); const items=[];
+
+  // FIT
+
+  if(g.fit==="hold") items.push({cls:"stop",t:{en:"The only value is generating content from scratch. Rethink the task in a way so that AI helps you with your process rather than doing it fully on its own, or keep it fully human.",tr:"Buradaki tek fayda sıfırdan bir içerik üretmek. Görevi tamamiyle yapay zekaya yaptirmak yerine size bilgi bulmada ya da taslak çıkarmada yardımcı olmasini saglayin ya da bu görevi tamamiyle bir insana birakin."}});
+
+  else if(state.taskclass==="heavily") items.push({cls:"stop",t:{en:"The heart of this needs expert judgement. Keep the thinking and the conclusion human. Do not let AI produce the final version.",tr:"İşinizin büyük bir kısmı uzman görüşü gerektiriyor. Düşünmeyi ve sonuç üretmeyi bir insana yaptırmak daha faydalı; son sürümü yapay zekânın üretmemesi daha doğru olur."}});
+
+  else if(state.taskclass==="partly") items.push({cls:"flag",t:{en:"Split the task: let AI handle the straightforward writing and structure, and keep the judgement part human.",tr:"Görevi ikiye ayırabilirsiniz: düz yazım ve kurgu kısmını yapay zekâya bırakıp görüş gerektiren kısmı insanda tutabilirsiniz."}});
+
+  // ENVIRONMENTAL
+
+  if(g.environmental==="hold") items.push({cls:"stop",t:{en:"The AI work is heavy and the task does not take a long time, so the energy the AI tool will use is not worth it. Do it the old way, or find a light tool.",tr:"Yapay zekânın yapacağı iş ağır ve göreviniz çok zaman harcamıyor; bu durumda yapay zekânın harcadığı enerjiye değmez. Eski yönteminize devam edebilirsiniz ya da daha az enerji kullanan bir araç bulmayı deneyebilirsiniz."}});
+
+  else if(state.compute==="heavy"&&state.counterfactual==="hours") items.push({cls:"flag",t:{en:"Only a few hours saved for heavy AI work. Make sure it is worth it, and prefer a lighter model.",tr:"Yapay zekâya ağır bir iş yaptırıp yalnızca birkaç saat kazanıyorsunuz. Buna gerçekten değip değmediğinden emin olun ve mümkünse daha hafif bir model tercih edin."}});
+
+  if(state.greentool==="no"||state.greentool==="unsure") items.push({cls:"flag",t:{en:"Pick a lighter tool and setting: for example “chat with your document” instead of open chat, and a smaller model.",tr:"Daha küçük bir model ve ayar seçin: örneğin serbest sohbet yerine “belgenizle sohbet”."}});
+
+  // EPISTEMIC
+
+  if(g.epistemic==="cond"){
+
+    const what=state.fabrisk==="high"?{en:"every figure, source, and species or technical term",tr:"her rakamı, kaynağı ve tür ya da teknik terimi"}:{en:"the key figures and sources",tr:"önemli rakamları ve kaynakları"};
+
+    items.push({cls:"flag",t:{en:`Check ${what.en} against the references before anything goes out.`,tr:`Hazırladığınız içerikler dışarı çıkmadan önce, ${what.tr} kaynaklarıyla bir kez daha karşılaştırın.`}});
+
+    items.push({cls:"flag",reviewer:true,t:{en:"Name one person, the second eye, who checks it and signs off.",tr:"Bir kişi belirleyin — ikinci bir çift göz — çıktıyı kontrol edip onaylasın."}});
+
+  }
+
+  // PRIVACY
+
+  if(g.privacy==="hold"){
+
+    items.push({cls:"stop",t:{en:"Highly sensitive data (species coordinates or community personal data) with no clear plan to remove or anonymize it. Do not upload as-is. Strip or blur the sensitive parts first, or keep this task off AI tools entirely.",tr:"Çok hassas veriler söz konusu (tür koordinatları ya da topluluk kişisel verisi) ve bunları kaldırmak ya da anonimleştirmek için net bir plan yok. Olduğu gibi yüklemeyin. Önce hassas kısımları kaldırın ya da bulanıklaştırın; ya da bu görevi yapay zekâ araçlarından tamamen uzak tutun."}});
+
+  } else if(g.privacy==="cond"){
+
+    items.push({cls:"flag",t:{en:"Remove or anonymize sensitive details before uploading: replace names with roles, round or blur exact coordinates, and take out donor and funder specifics.",tr:"Yüklemeden önce hassas ayrıntıları kaldırın ya da anonimleştirin: isimleri unvan/rollerle değiştirebilir, kesin koordinatları yuvarlayabilir ya da bulanıklaştırabilir, bağışçı ve fon ayrıntılarını çıkarabilirsiniz."}});
+
+    if(state.community==="yes") items.push({cls:"flag",t:{en:"This material involves information from a community you work with. Check whether they have agreed to its use, and treat data about them as theirs to control.",tr:"Bu içerik, birlikte çalıştığınız bir toplulukla ilgili bilgiler içeriyor. Kullanımına onay verip vermediklerini kontrol edin ve bu veri onlara ait, bu sebeple onların kontrolü altında olmalı"}});
+
+  }
+
+  // RELATIONAL
+
+  if(g.relational==="hold") items.push({cls:"stop",t:{en:"This is public, represents our-voice, the content could feel AI-generated and not genuine. Do not publish AI versions. Make it genuinely and visibly human.",tr:"Bu bizi temsil ediyor, kamuya dönük ve yapay zekâyla yapılırsa sahte hissettirecek bir içerik. Yapay zekânın çıktılarını olduğu gibi yayınlamayın; bu içeriğin içten hissetirmesi için insan yapımı olması/birinin üstünden geçmesi daha doğru olur."}});
+
+  else if(g.relational==="cond"){
+
+    if(state.audience==="public"&&state.perception==="maybe") items.push({cls:"flag",t:{en:"Say AI helped, and make sure a person wrote the part that carries your message.",tr:"Yapay zekâdan yardım aldığınızı belirtin ve önemli mesajları taşıyan kısımları bir insanın yazdığından/kontrol ettiğinden emin olun."}});
+
+    if(state.audience==="funders") items.push({cls:"flag",t:{en:"Tell the funder how and where you used AI and keep your own analysis clear in your work. Most funders now expect exactly this.",tr:"Fon verenlere yapay zekâyı nerede ve nasıl kullandığınızı açıklayın; hangi kısımlarda yardım aldığınızı ve kendi analizinizi şeffaf biçimde belirtin. Fon verenlerin çoğu yapay zekâ kullanımı konusunda bunu bekliyor."}});
+
+    if(state.audience==="public"&&state.volunteers==="yes") items.push({cls:"flag",t:{en:"Review it before others share, inform yourself and others how to verify data and distinguish AI fakes.",tr:"Gönüllüler paylaşmadan önce kontrol edin, kendinizi ve çevrenizi doğru bilgiyi bulma konusunda ve yapay zekâ sahtelerini nasıl ayırt edeceğiniz konusunda bilgilendirin."}});
+
+    if(state.perception==="yes"&&state.audience!=="public") items.push({cls:"flag",t:{en:"A person should write the part that carries your message. Use AI only in the background.",tr:"Kimliğinizi/mesajınızı taşıyan kısmı bir insan yazsın. Yapay zekâyı yalnızca arka planda kullanın."}});
+
+  }
+
+  if(items.length===0) items.push({cls:"",t:{en:"Use it as-is. Keep the simple habit: skim the output before it leaves your hands.",tr:"Olduğu gibi kullanabilirsiniz. Yalnızca şu basit alışkanlığı sürdürün: çıktı elinizden çıkmadan önce üstünden geçip kontrol edin"}});
+
+  return items;
+
+}
+
+ 
+
+/* ============================================================ RENDER ============================================================ */
+
+let current=0;
+
+const stationsEl=document.getElementById("stations");
+
+const panelEl=document.getElementById("panel");
+
+ 
+
+function renderChrome(){
+
+  document.documentElement.lang=lang;
+
+  document.getElementById("langbtn").textContent=t("langbtn");
+
+  document.getElementById("brand").textContent=t("brand");
+
+  document.title=t("brand");
+
+  document.getElementById("m-eyebrow").textContent=t("eyebrow");
+
+  document.getElementById("m-lede").innerHTML=t("lede");
+
+  document.getElementById("t-title").textContent=t("transect");
+
+  document.getElementById("footnote").textContent=t("footnote");
+
+}
+
+ 
+
+function renderStations(){
+
+  stationsEl.innerHTML=STATIONS.map((st,i)=>{
+
+    let reading=null,cur="";
+
+    if(st.key==="verdict"){
+
+      if(current>=STEPS.length){const v=verdict();reading=v.cls==="adopt"?"pass":v.cls;cur="current";}
+
+    } else {
+
+      const idx=STEPS.findIndex(s=>s.station===st.key);
+
+      if(idx===current)cur="current";
+
+      if(st.key==="baseline"&&current>0)reading="log";
+
+      else if(stationReached(st.key))reading=readingFor(st.key);
+
+    }
+
+    const rl=reading?t("rd."+reading):"";
+
+    return `<div class="station ${st.terminus?'terminus':''} ${cur}" ${reading?`data-reading="${reading}"`:''}>
+
+      <div class="rail"><div class="node">${i+1}</div></div>
+
+      <div class="meta"><div class="name">${L(st.name)}</div><div class="tr">${L(STATION_SUB[st.key])}</div><span class="reading">${rl}</span></div>
+
+    </div>`;
+
+  }).join("");
+
+}
+
+ 
+
+function renderPanel(){
+
+  if(current>=STEPS.length){renderVerdict();return;}
+
+  const step=STEPS[current];
+
+  panelEl.innerHTML=`
+
+    <div class="step-tag">${L(step.tag)}</div>
+
+    <h3>${L(step.title)}</h3>
+
+    <p class="sub">${L(step.sub)}</p>
+
+    <div class="qs">${step.render()}</div>
+
+    <div class="nav">
+
+      <button class="btn ghost" id="back" ${current===0?'disabled':''}>${t("back")}</button>
+
+      <span class="err" id="err"></span><span class="spacer"></span>
+
+      <button class="btn primary" id="next">${current===STEPS.length-1?t("last"):t("cont")}</button>
+
+    </div>`;
+
+  wireChips();
+
+  if(step.station==="privacy")updatePrivacyGuidance();
+
+  document.getElementById("back").onclick=()=>{if(current>0){current--;renderAll();}};
+
+  document.getElementById("next").onclick=()=>{
+
+    if(step.collect)step.collect();
+
+    const msg=step.validate?step.validate():"";
+
+    if(msg){document.getElementById("err").textContent=msg;return;}
+
+    current++;renderAll();
+
+  };
+
+  const ti=document.getElementById("task"); if(ti)ti.oninput=e=>state.task=e.target.value;
+
+}
+
+ 
+
+/* ===== privacy live guidance ===== */
+
+function updatePrivacyGuidance(){
+
+  const uw=document.getElementById("upload-warn");
+
+  if(uw){
+
+    const notes=[];
+
+    if(state.datatypes.includes("species")) notes.push(L({en:"<b>Species locations or coordinates:</b> precise locations of protected species can aid poaching or disturbance. Round, blur, or remove the exact coordinates before any upload.",tr:"<b>Tür konumları / koordinatları:</b> korunan türlerin kesin konumları kaçak avcılığı ya da canlıların rahatsız edilmesini kolaylaştırabilir. Yüklemeden önce koordinatları yuvarlayın, bulanıklaştırın ya da tümüyle kaldırın."}));
+
+    if(state.datatypes.includes("personal")) notes.push(L({en:"<b>Community personal data:</b> remove names, phone numbers, and addresses first. Indigenous or local people's data also carries legal and trust obligations, so confirm consent.",tr:"<b>Topluluk kişisel verisi:</b> yüklemeden önce isimleri, telefon numaralarını ve adresleri kaldırın. Yerli ya da yerel halkın verisi hukuki ve güvene dayalı yükümlülükler de taşır; onay alındığını doğrulayın."}));
+
+    if(state.datatypes.includes("donor")) notes.push(L({en:"<b>Donor or confidential funder information:</b> strip names, amounts, and contact details. This is usually covered by agreements, so do not paste it into open AI tools.",tr:"<b>Bağışçı ya da gizli fon bilgisi:</b> isimleri, tutarları ve iletişim ayrıntılarını çıkarın. Bu bilgiler genelde sözleşmelerle korunur; açık yapay zekâ araçlarına yapıştırmayın."}));
+
+    if(state.datatypes.includes("research")) notes.push(L({en:"<b>Unpublished research:</b> uploading can risk your priority and any embargo. Keep it out, or use a private setting.",tr:"<b>Yayınlanmamış araştırma:</b> bunu yüklemek araştırmanızı ve sonuçlarını riske atabilir. Ya araçların dışında tutun ya da özel (gizli) bir ayar kullanın."}));
+
+    if(state.datatypes.includes("internal")) notes.push(L({en:"<b>Internal reports:</b> check for any names, locations, or unpublished figures before uploading.",tr:"<b>Kamuya kapalı raporlar:</b> yüklemeden önce isim, konum ya da paylaşmak istemediğiniz başka bir veri olup olmadığını kontrol edin."}));
+
+    if(notes.length){
+
+      uw.innerHTML=`<div class="warnbox"><h5>${L({en:"Before you upload",tr:"Yüklemeden önce"})}</h5>
+
+        <p>${L({en:"Whatever you upload is usually processed on the AI tool's company's servers, not on your computer. Deal with these first:",tr:"Yüklediğiniz şey genelde sizin bilgisayarınızda değil, yapay zekâ şirketinin sunucularında işlenir. Yüklemeden önce şunları gözden geçirmekte fayda var:"})}</p>
+
+        <ul>${notes.map(n=>`<li>${n}</li>`).join("")}</ul></div>`;
+
+    } else uw.innerHTML="";
+
+  }
+
+  const cf=document.getElementById("consent-flag");
+
+  if(cf){
+
+    cf.innerHTML=(state.community==="yes")?`<div class="warnbox"><h5>${L({en:"Consent and ownership",tr:"Onay ve sahiplik"})}</h5>
+
+      <p>${L({en:"Because this is about or by a community you work with, they may have a say over how it is used. Confirm they agreed, and treat the data as theirs.",tr:"Bu içerik, birlikte çalıştığınız bir toplulukla ilgili ya da onlar tarafından üretildiği için, nasıl kullanılacağı konusunda söz hakları olabilir. Onay verdiklerini doğrulayın ve veriyi onların malı olarak görün."})}</p></div>`:"";
+
+  }
+
+}
+
+ 
+
+function renderVerdict(){
+
+  const v=verdict(),g=gateReadings(),items=instrumentation();
+
+  const needRev=items.some(i=>i.reviewer);
+
+  const rationale=t("rationale."+v.code).replace("{task}",esc(state.task));
+
+  const pill=(k,r)=>`<span class="pill ${r==='pass'?'pass':r}">${k} · ${t("pillstatus."+r)}</span>`;
+
+  let k=0;
+
+  const list=items.map(it=>{k++;return `<li class="${it.cls}" data-k="${k}">${L(it.t)}</li>`;}).join("");
+
+  panelEl.innerHTML=`
+
+    <div class="step-tag">${t("station")} 07 · ${L(STATION_SUB.verdict)}</div>
+
+    <div class="verdict-badge ${v.cls}"><span class="code">${v.code}</span><span class="name">${t("verdict."+v.code)}</span></div>
+
+    <p class="rationale">${rationale}</p>
+
+    <div class="readout">${pill(t("gate.fit"),g.fit)} ${pill(t("gate.environmental"),g.environmental)} ${pill(t("gate.epistemic"),g.epistemic)} ${pill(t("gate.privacy"),g.privacy)} ${pill(t("gate.relational"),g.relational)}</div>
+
+    <div class="instr">
+
+      <h4>${t("instrHead")}</h4>
+
+      <ul>${list}</ul>
+
+      ${needRev?`<div class="reviewer-field"><label for="reviewer">${t("reviewerLabel")}</label>
+
+        <input type="text" id="reviewer" placeholder="${t("reviewerPh")}" value="${esc(state.reviewer)}" /></div>`:''}
+
+    </div>
+
+ 
+
+    ${promptingGuideHTML()}
+
+    ${costBenefitHTML()}
+
+ 
+
+    <div class="nav"><button class="btn ghost" id="back">${t("back")}</button></div>
+
+    <div class="exportbar">
+
+      <button class="btn primary" id="save">${t("save")}</button>
+
+      <button class="btn ghost" id="print">${t("print")}</button>
+
+      <button class="btn ghost" id="reset">${t("reset")}</button>
+
+    </div>`;
+
+  renderStations();
+
+  const rv=document.getElementById("reviewer"); if(rv)rv.oninput=e=>state.reviewer=e.target.value;
+
+  document.getElementById("back").onclick=()=>{current--;renderAll();};
+
+  document.getElementById("print").onclick=()=>window.print();
+
+  document.getElementById("reset").onclick=()=>{resetState();current=0;renderAll();};
+
+  document.getElementById("save").onclick=saveRecord;
+
+  wireChips();
+
+  wireCostBenefit();
+
+}
+
+ 
+
+/* ===== prompting guide ===== */
+
+function promptingGuideHTML(){
+
+  const eff=t("pgEff").map(o=>`<li>${L(o)}</li>`).join("");
+
+  const qual=t("pgQual").map(o=>`<li>${L(o)}</li>`).join("");
+
+  return `<details class="section">
+
+    <summary>${t("pgTitle")}</summary>
+
+    <div class="section-body">
+
+      <p>${t("pgIntro")}</p>
+
+      <h5>${t("pgEffHead")}</h5>
+
+      <ul>${eff}</ul>
+
+      <h5>${t("pgQualHead")}</h5>
+
+      <ul>${qual}</ul>
+
+      <div class="example">
+
+        <span class="tag">${t("pgEx1Tag")}</span>
+
+        <p>${t("pgEx1P1")}</p>
+
+        <div class="ex-prompt">${esc(t("pgEx1Prompt"))}</div>
+
+        <p>${t("pgEx1P2")}</p>
+
+      </div>
+
+      <div class="example">
+
+        <span class="tag">${t("pgEx2Tag")}</span>
+
+        <p>${t("pgEx2P1")}</p>
+
+        <div class="ex-prompt">${esc(t("pgEx2Prompt"))}</div>
+
+        <p>${t("pgEx2P2")}</p>
+
+      </div>
+
+    </div>
+
+  </details>`;
+
+}
+
+ 
+
+/* ===== cost-benefit ===== */
+
+function costBenefitHTML(){
+
+  const o3=t("cbQ3opts"),o4=t("cbQ4opts");
+
+  return `<details class="section" id="cb-section">
+
+    <summary>${t("cbTitle")}</summary>
+
+    <div class="section-body">
+
+      <p>${t("cbIntro")}</p>
+
+      <div class="cb-grid">
+
+        <div class="cb-field">
+
+          <label for="cb-hours">${t("cbQ1")}</label>
+
+          <p class="hint">${t("cbQ1hint")}</p>
+
+          <input type="number" id="cb-hours" min="0" step="0.5" value="${esc(state.cb.hours)}" placeholder="3" />
+
+        </div>
+
+        <div class="cb-field">
+
+          <label for="cb-rate">${t("cbQ2")}</label>
+
+          <p class="hint">${t("cbQ2hint")}</p>
+
+          <input type="number" id="cb-rate" min="0" step="1" value="${esc(state.cb.rate)}" placeholder="15" />
+
+        </div>
+
+      </div>
+
+      <div class="cb-field" style="margin-bottom:14px">
+
+        <label>${t("cbQ3")}</label>
+
+        ${chips("cb.specialist",[["yes",{en:o3.yes,tr:o3.yes}],["sometimes",{en:o3.sometimes,tr:o3.sometimes}],["no",{en:o3.no,tr:o3.no}]],false)}
+
+      </div>
+
+      <div class="cb-field" id="cb-contractorwrap" style="margin-bottom:14px;${(state.cb.specialist==='yes'||state.cb.specialist==='sometimes')?'':'display:none'}">
+
+        <label for="cb-contractor">${t("cbContractor")}</label>
+
+        <p class="hint">${t("cbContractorHint")}</p>
+
+        <input type="number" id="cb-contractor" min="0" step="1" value="${esc(state.cb.contractorcost)}" placeholder="200" />
+
+      </div>
+
+      <div class="cb-field" style="margin-bottom:14px">
+
+        <label>${t("cbQ4")}</label>
+
+        ${chips("cb.freq",[["week",{en:o4.week,tr:o4.week}],["month",{en:o4.month,tr:o4.month}],["rare",{en:o4.rare,tr:o4.rare}]],false)}
+
+      </div>
+
+      <div class="cb-field" style="margin-bottom:14px">
+
+        <label>${t("cbCompute")}</label>
+
+        ${chips("cb.compute",[["light",{en:t("cbLightLabel"),tr:t("cbLightLabel")}],["heavy",{en:t("cbHeavyLabel"),tr:t("cbHeavyLabel")}]],false)}
+
+      </div>
+
+      <div class="cb-field" style="margin-bottom:14px">
+
+        <label>${t("cbPay")}</label>
+
+        ${chips("cb.paymodel",[["sub",{en:t("cbPayOpts").sub,tr:t("cbPayOpts").sub}],["usage",{en:t("cbPayOpts").usage,tr:t("cbPayOpts").usage}]],false)}
+
+      </div>
+
+      <div class="cb-field" id="cb-subwrap" style="margin-bottom:14px;${state.cb.paymodel==='sub'?'':'display:none'}">
+
+        <label for="cb-sub">${t("cbSub")}</label>
+
+        <p class="hint">${t("cbSubHint")}</p>
+
+        <input type="number" id="cb-sub" min="0" step="1" value="${esc(state.cb.sub)}" placeholder="20" />
+
+      </div>
+
+      <button class="btn primary" id="cb-go" type="button">${t("cbBtn")}</button>
+
+      <div id="cb-result"></div>
+
+      <p class="cb-caveat">${t("cbCaveat")}</p>
+
+      <h5>${t("cbEvHead")}</h5>
+
+      <p>${t("cbEvIntro")}</p>
+
+      <ul>${t("cbEv").map(x=>`<li>${L(x)}</li>`).join("")}</ul>
+
+      <p class="cb-caveat">${t("cbEvNote")}</p>
+
+      <h5>${t("cbRefHead")}</h5>
+
+      <ul class="cb-refs">${t("cbRefs").map(x=>`<li>${L(x)}</li>`).join("")}</ul>
+
+    </div>
+
+  </details>`;
+
+}
+
+ 
+
+function computeCostBenefit(){
+
+  const hours=parseFloat(val("cb-hours"))||0;
+
+  let rate=parseFloat(val("cb-rate"));
+
+  if(!rate||rate<=0)rate=15; // modest default unit/hour
+
+  const freqMap={week:4.3,month:3,rare:0.25};
+
+  const runs=freqMap[state.cb.freq]||3;
+
+ 
+
+  const hoursSavedMonth=hours*runs*0.7; // assume AI removes ~70% of the manual effort
+
+ 
+
+  // Contractor / specialist saving. If they gave a real per-time cost, use it.
+
+  // "sometimes" means the contractor was only needed part of the time, so count half.
+
+  const contractorCost=parseFloat(state.cb.contractorcost)||0;
+
+  let staffSavedMonth, contractorSavedMonth=0;
+
+  if(contractorCost>0){
+
+    const share={yes:1,sometimes:0.5,no:0}[state.cb.specialist]||0;
+
+    contractorSavedMonth=contractorCost*runs*share;
+
+    staffSavedMonth=hoursSavedMonth*rate; // staff time saved, no guessed multiplier
+
+  } else {
+
+    // no figure given: fall back to a rough multiplier on the staff rate
+
+    const specMult={yes:2,sometimes:1.4,no:1}[state.cb.specialist]||1;
+
+    staffSavedMonth=hoursSavedMonth*rate*specMult;
+
+  }
+
+  const totalSavedMonth=staffSavedMonth+contractorSavedMonth;
+
+ 
+
+  const isSub=state.cb.paymodel==="sub";
+
+  let aiCostMonth;
+
+  if(isSub){
+
+    aiCostMonth=parseFloat(state.cb.sub)||0; // flat monthly subscription
+
+  } else {
+
+    const aiPerRun=(state.cb.compute==="heavy")?0.05:0.003; // approximate per-run cost
+
+    aiCostMonth=runs*aiPerRun;
+
+  }
+
+  const netYear=(totalSavedMonth*12)-(aiCostMonth*12);
+
+ 
+
+  const fmt=n=>{ if(n>=100)return Math.round(n).toLocaleString(); if(n>=10)return n.toFixed(0); return n.toFixed(2); };
+
+  const cur=t("cbCurrency");
+
+  const summary=t("cbSummaryTmpl")
+
+    .replace("{hrs}",fmt(hoursSavedMonth))
+
+    .replace("{rate}",`${fmt(rate)} ${cur}`)
+
+    .replace("{save}",`${fmt(totalSavedMonth*12)} ${cur}`);
+
+ 
+
+  const contractorRow=contractorSavedMonth>0
+
+    ?`<div class="row"><span class="k">${t("cbOutContractor")}</span><span class="v">${fmt(contractorSavedMonth)} ${cur}</span></div>`:'';
+
+ 
+
+  return `<div class="cb-out">
+
+    <div class="row"><span class="k">${t("cbOutTime")}</span><span class="v">${fmt(hoursSavedMonth)} ${t("cbHrs")}</span></div>
+
+    <div class="row"><span class="k">${t("cbOutStaff")}</span><span class="v">${fmt(staffSavedMonth)} ${cur}</span></div>
+
+    ${contractorRow}
+
+    <div class="row"><span class="k">${t("cbOutAI")}</span><span class="v">${fmt(aiCostMonth)} ${cur}</span></div>
+
+    <div class="row"><span class="k">${t("cbOutYear")}</span><span class="v">${fmt(netYear)} ${cur}</span></div>
+
+    <p class="cb-summary">${summary}</p>
+
+    ${isSub?`<p class="cb-caveat">${t("cbSubNote")}</p>`:''}
+
+    <p class="cb-caveat">${t("cbHidden")}</p>
+
+  </div>`;
+
+}
+
+ 
+
+function wireCostBenefit(){
+
+  const go=document.getElementById("cb-go");
+
+  if(go)go.onclick=()=>{
+
+    state.cb.hours=val("cb-hours");
+
+    state.cb.rate=val("cb-rate");
+
+    state.cb.sub=val("cb-sub");
+
+    state.cb.contractorcost=val("cb-contractor");
+
+    document.getElementById("cb-result").innerHTML=computeCostBenefit();
+
+  };
+
+}
+
+ 
+
+function renderAll(){renderChrome();renderStations();renderPanel();panelEl.scrollIntoView({behavior:"smooth",block:"nearest"});}
+
+ 
+
+/* ============================================================ CHIPS ============================================================ */
+
+function getField(field){return field.split('.').reduce((o,p)=>o[p],state);}
+
+function setField(field,v){const parts=field.split('.');const last=parts.pop();const obj=parts.reduce((o,p)=>o[p],state);obj[last]=v;}
+
+ 
+
+function chips(field,opts,multi){
+
+  const cur=getField(field);
+
+  return `<div class="chips" data-field="${field}" data-multi="${multi?1:0}">`+
+
+    opts.map(([v,label])=>{
+
+      const sel=multi?cur.includes(v):cur===v;
+
+      return `<button type="button" class="chip" role="${multi?'button':'radio'}" data-val="${v}" aria-pressed="${sel}">${L(label)}</button>`;
+
+    }).join("")+`</div>`;
+
+}
+
+function wireChips(){
+
+  panelEl.querySelectorAll(".chips").forEach(group=>{
+
+    const field=group.dataset.field,multi=group.dataset.multi==="1";
+
+    group.querySelectorAll(".chip").forEach(chip=>{
+
+      chip.onclick=()=>{
+
+        const v=chip.dataset.val;
+
+        if(multi){const a=getField(field);const i=a.indexOf(v);if(i>=0)a.splice(i,1);else a.push(v);}
+
+        else{setField(field,(getField(field)===v)?"":v);}
+
+        group.querySelectorAll(".chip").forEach(c=>{
+
+          const cur=getField(field);
+
+          const sel=multi?cur.includes(c.dataset.val):cur===c.dataset.val;
+
+          c.setAttribute("aria-pressed",sel);
+
+        });
+
+        if(field==="audience"){const vq=document.getElementById("volq");if(vq){vq.style.display=(state.audience==="public")?"":"none";if(state.audience!=="public")state.volunteers="";}}
+
+        if(field==="cb.paymodel"){const sw=document.getElementById("cb-subwrap");if(sw)sw.style.display=(state.cb.paymodel==="sub")?"":"none";}
+
+        if(field==="cb.specialist"){const cw=document.getElementById("cb-contractorwrap");if(cw)cw.style.display=(state.cb.specialist==="yes"||state.cb.specialist==="sometimes")?"":"none";}
+
+        if(field==="datatypes"||field==="community")updatePrivacyGuidance();
+
+        const err=document.getElementById("err");if(err)err.textContent="";
+
+      };
+
+    });
+
+  });
+
+}
+
+ 
+
+/* ============================================================ UTIL ============================================================ */
+
+function val(id){const e=document.getElementById(id);return e?e.value:"";}
+
+function esc(s){return (s||"").toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+function resetState(){Object.assign(state,{task:"",bottleneck:[],counterfactual:"",value:[],taskclass:"",compute:"",greentool:"",datatypes:[],sensitive:[],anonplan:"",community:"",fabrisk:"",consequence:"",audience:"",perception:"",volunteers:"",reviewer:"",cb:{hours:"",rate:"",specialist:"",contractorcost:"",freq:"",compute:"",paymodel:"",sub:""}});}
+
+function saveRecord(){
+
+  const v=verdict();
+
+  const rec={tool:t("brand"),language:lang,generated:new Date().toISOString(),task:state.task,
+
+    verdict:t("verdict."+v.code),gate_readings:gateReadings(),
+
+    steps:instrumentation().map(i=>L(i.t)),named_reviewer:state.reviewer||null,inputs:{...state}};
+
+  const blob=new Blob([JSON.stringify(rec,null,2)],{type:"application/json"});
+
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+
+  const slug=(state.task||"task").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+
+  a.href=url;a.download=`transect-${slug||"task"}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+
+}
+
+ 
+
+/* ============================================================ LANG TOGGLE + BOOT ============================================================ */
+
+document.getElementById("langbtn").onclick=()=>{lang=(lang==="en")?"tr":"en";renderAll();};
+
+renderAll();
+
+</script>
+
+</body>
+</html>
