@@ -2,7 +2,7 @@
 
 **A single-file, offline AI-adoption decision tool for conservation NGOs.**
 
-Transect walks a team through a short, structured interview about a task they're considering using AI for, and returns a verdict:**Pass**, **Conditional**, **Hold**, or **Log or Skip**, along with the reasoning behind it. It's built for organizations that want a lightweight, repeatable way to think through AI adoption decisions without a consultant, a workshop, or a spreadsheet.
+Transect walks a team through a short, structured interview about a task they're considering using AI for, and returns a verdict: **Pass**, **Conditional**, **Hold**, or **Log or Skip**, along with the reasoning behind it. It's built for organizations that want a lightweight, repeatable way to think through AI adoption decisions without a consultant, a workshop, or a spreadsheet.
 
 🇬🇧 English and 🇹🇷 Türkçe supported, toggleable at any time.
 
